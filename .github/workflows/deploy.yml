@@ -26,10 +26,21 @@ jobs:
             cd /root/oreuda
             git fetch origin
             git reset --hard origin/main
-            DB_PASSWORD=$(openssl rand -hex 16)
-            SECRET_KEY=$(openssl rand -hex 32)
-            printf "DATABASE_URL=postgresql://oreuda:%s@db:5432/oreuda\nSECRET_KEY=%s\nALGORITHM=HS256\nACCESS_TOKEN_EXPIRE_DAYS=30\nDEBUG=False\n" "$DB_PASSWORD" "$SECRET_KEY" > backend/.env
-            export DB_PASSWORD SECRET_KEY
+            
+            # Generate secrets and export for docker-compose
+            export DB_PASSWORD=$(openssl rand -hex 16)
+            export SECRET_KEY=$(openssl rand -hex 32)
+            
+            # Write backend .env
+            cat > backend/.env << ENV_EOF
+            DATABASE_URL=postgresql://oreuda:${DB_PASSWORD}@db:5432/oreuda
+            SECRET_KEY=${SECRET_KEY}
+            ALGORITHM=HS256
+            ACCESS_TOKEN_EXPIRE_DAYS=30
+            DEBUG=False
+            ENV_EOF
+            
+            # Deploy with exported DB_PASSWORD so postgres gets the same password
             docker compose down
             docker compose up -d --build
             sleep 10
