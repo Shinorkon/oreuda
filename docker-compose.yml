@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:16
+    container_name: oreuda_db
+    restart: always
+    environment:
+      POSTGRES_USER: oreuda
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-oreuda}
+      POSTGRES_DB: oreuda
+    ports:
+      - "5434:5432"
+    volumes:
+      - oreuda_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oreuda"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: oreuda_api
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgresql://oreuda:${DB_PASSWORD:-oreuda}@db:5432/oreuda
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: "false"
+    restart: always
+    ports:
+      - "8004:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  oreuda_db_data:

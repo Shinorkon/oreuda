@@ -1,0 +1,3298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARISE — Solo Leveling Life System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════════════════════════
+       ARISE — SOLO LEVELING LIFE SYSTEM
+       Design System: Research-Backed Solo Leveling UI
+       ═══════════════════════════════════════════════════════════ */
+
+    :root {
+      /* Core Palette */
+      --black: #000000;
+      --void-navy: #030712;
+      --deep-abyss: #0B1426;
+      --slate-surface: #111827;
+      --panel-fill: #162032;
+      --holo-cyan: #00E5FF;
+      --system-blue: #2196F3;
+      --deep-cyan: #0097A7;
+      --aether-blue: #4FC3F7;
+      --arise-gold: #FFD700;
+      --hp-crimson: #FF1744;
+      --alert-red: #FF3D00;
+      --success-green: #00E676;
+      --pure-white: #FFFFFF;
+      --system-silver: #B0BEC5;
+      --muted-ash: #78909C;
+      --bracket-cyan: #00E5FF;
+      --gate-purple: #E040FB;
+      --agility-green: #69F0AE;
+      --vitality-red: #FF5252;
+      --sense-cyan: #18FFFF;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--black);
+      color: var(--pure-white);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Scanline Overlay ── */
+    .scanlines::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 229, 255, 0.03) 2px,
+        rgba(0, 229, 255, 0.03) 4px
+      );
+      border-radius: inherit;
+    }
+
+    /* ── KEYFRAME ANIMATIONS ── */
+    @keyframes glitchAppear {
+      0% { clip-path: inset(100% 0 0 0); transform: translateX(-4px); opacity: 0; }
+      20% { clip-path: inset(60% 0 20% 0); transform: translateX(3px); opacity: 0.5; }
+      40% { clip-path: inset(10% 0 50% 0); transform: translateX(-2px); opacity: 0.7; }
+      60% { clip-path: inset(40% 0 10% 0); transform: translateX(1px); opacity: 0.8; }
+      80% { clip-path: inset(0% 0 0% 0); transform: translateX(-1px); opacity: 0.95; }
+      100% { clip-path: inset(0 0 0 0); transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes hologramFlicker {
+      0%, 100% { opacity: 0.92; }
+      25% { opacity: 1; }
+      50% { opacity: 0.88; }
+      75% { opacity: 0.97; }
+    }
+
+    @keyframes scanLineReveal {
+      0% { transform: translateY(100%); opacity: 0; }
+      30% { opacity: 1; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes typewriterText {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+
+    @keyframes panelMaterialize {
+      0% { transform: scale(0.95); opacity: 0; border-color: transparent; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes statIncrement {
+      0% { transform: translateY(0); color: var(--pure-white); }
+      50% { transform: translateY(-4px); color: var(--arise-gold); }
+      100% { transform: translateY(0); color: var(--pure-white); }
+    }
+
+    @keyframes questPopup {
+      0% { transform: translateY(-30px); opacity: 0; box-shadow: 0 0 0 rgba(0,229,255,0); }
+      60% { box-shadow: 0 0 20px rgba(0,229,255,0.3); }
+      100% { transform: translateY(0); opacity: 1; box-shadow: 0 0 8px rgba(0,229,255,0.1); }
+    }
+
+    @keyframes shadowExtract {
+      0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+      50% { opacity: 1; transform: translateY(-5px) scale(1.02); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 8px rgba(0,229,255,0.3); }
+      50% { box-shadow: 0 0 20px rgba(0,229,255,0.6), 0 0 40px rgba(0,229,255,0.15); }
+    }
+
+    @keyframes pulseGlowGold {
+      0%, 100% { box-shadow: 0 0 8px rgba(255,215,0,0.3); }
+      50% { box-shadow: 0 0 20px rgba(255,215,0,0.6), 0 0 40px rgba(255,215,0,0.15); }
+    }
+
+    @keyframes avatarPulse {
+      0%, 100% { box-shadow: 0 0 10px rgba(0,229,255,0.3), inset 0 0 10px rgba(0,229,255,0.1); }
+      50% { box-shadow: 0 0 25px rgba(0,229,255,0.6), 0 0 50px rgba(0,229,255,0.15), inset 0 0 20px rgba(0,229,255,0.2); }
+    }
+
+    @keyframes gateGlow {
+      0% { box-shadow: 0 0 20px rgba(224,64,251,0.3), inset 0 0 20px rgba(224,64,251,0.1); }
+      100% { box-shadow: 0 0 40px rgba(224,64,251,0.6), 0 0 80px rgba(224,64,251,0.2), inset 0 0 40px rgba(224,64,251,0.2); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    @keyframes borderRotate {
+      0% { --angle: 0deg; }
+      100% { --angle: 360deg; }
+    }
+
+    @keyframes blinkCursor {
+      0%, 100% { border-color: var(--holo-cyan); }
+      50% { border-color: transparent; }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+      20%, 40%, 60%, 80% { transform: translateX(3px); }
+    }
+
+    @keyframes particleFloat {
+      0%, 100% { transform: translateY(0) translateX(0); opacity: 0.6; }
+      25% { transform: translateY(-15px) translateX(8px); opacity: 1; }
+      50% { transform: translateY(-8px) translateX(-5px); opacity: 0.8; }
+      75% { transform: translateY(-20px) translateX(12px); opacity: 0.5; }
+    }
+
+    @keyframes scanRing {
+      0% { transform: scale(0.8); opacity: 0.6; }
+      100% { transform: scale(1.8); opacity: 0; }
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideInFromTop {
+      from { opacity: 0; transform: translateY(-100%); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideInFromBottom {
+      from { opacity: 0; transform: translateY(100%); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes ripple {
+      0% { transform: scale(0.8); opacity: 1; }
+      100% { transform: scale(2.2); opacity: 0; }
+    }
+
+    @keyframes sparkle {
+      0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+      50% { transform: scale(1.3) rotate(180deg); opacity: 0.8; }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    @keyframes widthExpand {
+      from { width: 0; }
+    }
+
+    @keyframes typewriter {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+
+    @keyframes lineReveal {
+      from { width: 0; opacity: 0; }
+      to { width: 100%; opacity: 1; }
+    }
+
+    @keyframes barFill {
+      from { width: 0; }
+      to { width: var(--target-width); }
+    }
+
+    @keyframes redPulseGlow {
+      0%, 100% { box-shadow: 0 0 10px rgba(255,23,68,0.3); }
+      50% { box-shadow: 0 0 25px rgba(255,23,68,0.6); }
+    }
+
+    @keyframes goldGlow {
+      0%, 100% { text-shadow: 0 0 10px rgba(255,215,0,0.5); }
+      50% { text-shadow: 0 0 25px rgba(255,215,0,0.9), 0 0 50px rgba(255,215,0,0.3); }
+    }
+
+    @keyframes subtlePulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    /* ── Page Layout ── */
+    .page-header {
+      text-align: center;
+      padding: 40px 20px 20px;
+      background: linear-gradient(180deg, rgba(0,229,255,0.05) 0%, transparent 100%);
+      border-bottom: 1px solid rgba(0,229,255,0.1);
+    }
+
+    .page-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 6px;
+      color: var(--holo-cyan);
+      margin-bottom: 8px;
+      position: relative;
+      display: inline-block;
+      animation: hologramFlicker 3s infinite;
+    }
+
+    .page-title .glitch-letter {
+      position: relative;
+      display: inline-block;
+    }
+
+    .page-title .glitch-letter::before,
+    .page-title .glitch-letter::after {
+      content: attr(data-letter);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+    }
+
+    .page-title .glitch-letter::before {
+      color: var(--hp-crimson);
+      animation: glitch1 2s infinite linear alternate-reverse;
+    }
+
+    .page-title .glitch-letter::after {
+      color: var(--system-blue);
+      animation: glitch2 3s infinite linear alternate-reverse;
+    }
+
+    @keyframes glitch1 {
+      0%, 90%, 100% { opacity: 0; transform: translateX(0); }
+      92% { opacity: 0.8; transform: translateX(-3px); }
+      94% { opacity: 0; transform: translateX(0); }
+      96% { opacity: 0.6; transform: translateX(2px); }
+    }
+
+    @keyframes glitch2 {
+      0%, 85%, 100% { opacity: 0; transform: translateX(0); }
+      87% { opacity: 0.7; transform: translateX(3px); }
+      89% { opacity: 0; transform: translateX(0); }
+      91% { opacity: 0.5; transform: translateX(-2px); }
+    }
+
+    .page-subtitle {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      color: var(--muted-ash);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .phone-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 40px;
+      padding: 40px 20px 80px;
+      max-width: 1800px;
+      margin: 0 auto;
+    }
+
+    /* ── Phone Frame ── */
+    .phone-frame {
+      width: 375px;
+      height: 834px;
+      background: var(--black);
+      border-radius: 44px;
+      border: 3px solid #1a1a2e;
+      position: relative;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(0,229,255,0.1),
+        0 20px 60px rgba(0,0,0,0.8),
+        0 0 40px rgba(0,229,255,0.05);
+      flex-shrink: 0;
+    }
+
+    .phone-notch {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 150px;
+      height: 30px;
+      background: var(--black);
+      border-radius: 0 0 20px 20px;
+      z-index: 100;
+    }
+
+    .phone-screen {
+      width: 100%;
+      height: 780px;
+      margin-top: 27px;
+      background: var(--void-navy);
+      position: relative;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .phone-screen::-webkit-scrollbar { width: 0; }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 28px 4px;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--pure-white);
+      position: relative;
+      z-index: 10;
+    }
+
+    .status-bar .time { letter-spacing: 0.5px; }
+    .status-bar .icons { display: flex; gap: 5px; align-items: center; }
+    .status-bar .battery {
+      width: 18px; height: 9px;
+      border: 1px solid var(--system-silver);
+      border-radius: 2px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      padding: 1px;
+    }
+    .status-bar .battery::after {
+      content: '';
+      position: absolute;
+      right: -3px; top: 2px;
+      width: 2px; height: 4px;
+      background: var(--system-silver);
+      border-radius: 0 1px 1px 0;
+    }
+    .status-bar .battery-fill {
+      width: 70%; height: 100%;
+      background: var(--holo-cyan);
+      border-radius: 1px;
+    }
+
+    .page-footer {
+      text-align: center;
+      padding: 30px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--muted-ash);
+      border-top: 1px solid rgba(0,229,255,0.08);
+      letter-spacing: 1px;
+    }
+
+    /* ═══════════════════════════════════════════
+       UTILITY COMPONENTS
+       ═══════════════════════════════════════════ */
+
+    .bracket-text {
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--bracket-cyan);
+      letter-spacing: 1px;
+    }
+
+    .stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+    }
+
+    .section-title {
+      font-family: 'Orbitron', monospace;
+      letter-spacing: 2px;
+    }
+
+    .cyber-border {
+      border: 1px solid rgba(0,229,255,0.3);
+      border-radius: 12px;
+      position: relative;
+    }
+
+    .cyber-border::before {
+      content: '';
+      position: absolute;
+      top: -1px; left: 15px;
+      width: 40px; height: 2px;
+      background: var(--holo-cyan);
+    }
+
+    .cyber-border::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; right: 15px;
+      width: 40px; height: 2px;
+      background: var(--holo-cyan);
+    }
+
+    .xp-bar {
+      height: 6px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 3px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .xp-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--system-blue), var(--holo-cyan));
+      position: relative;
+      animation: barFill 1.5s ease-out forwards;
+    }
+
+    .xp-bar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite;
+    }
+
+    .difficulty-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px; height: 22px;
+      border-radius: 4px;
+      font-family: 'Orbitron', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--black);
+    }
+
+    .badge-d { background: var(--success-green); }
+    .badge-c { background: var(--system-blue); }
+    .badge-b { background: #9C27B0; color: white; }
+    .badge-a { background: #FF9800; color: var(--black); }
+    .badge-s { background: linear-gradient(135deg, var(--arise-gold), #FFA000); color: var(--black); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--holo-cyan), var(--deep-cyan));
+      color: var(--black);
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 1px;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 24px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 0 20px rgba(0,229,255,0.5);
+      transform: translateY(-1px);
+    }
+
+    .btn-decline {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: var(--system-silver);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 1px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: absolute;
+      bottom: 0;
+      left: 0; right: 0;
+      height: 56px;
+      background: rgba(3,7,18,0.95);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(0,229,255,0.15);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 50;
+      padding: 0 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      color: var(--muted-ash);
+      font-size: 9px;
+      font-family: 'Orbitron', monospace;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: color 0.2s;
+      padding: 4px 8px;
+    }
+
+    .nav-item.active { color: var(--holo-cyan); }
+    .nav-item:hover { color: var(--holo-cyan); }
+    .nav-item svg { width: 20px; height: 20px; }
+
+    .nav-center {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--holo-cyan), var(--system-blue));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: -16px;
+      box-shadow: 0 0 15px rgba(0,229,255,0.4);
+    }
+
+    .nav-center svg { width: 22px; height: 22px; color: var(--black); }
+
+    /* Progress bar with fill animation */
+    .progress-bar {
+      height: 4px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: linear-gradient(90deg, var(--system-blue), var(--holo-cyan));
+    }
+
+    /* Card with left accent */
+    .accent-card {
+      background: var(--slate-surface);
+      border-radius: 10px;
+      border-left: 3px solid var(--holo-cyan);
+      padding: 12px;
+      margin-bottom: 8px;
+      position: relative;
+    }
+
+    .accent-card.green { border-left-color: var(--success-green); }
+    .accent-card.blue { border-left-color: var(--system-blue); }
+    .accent-card.purple { border-left-color: #9C27B0; }
+    .accent-card.orange { border-left-color: #FF9800; }
+    .accent-card.gold { border-left-color: var(--arise-gold); }
+    .accent-card.red { border-left-color: var(--hp-crimson); }
+
+    /* Toggle switch */
+    .toggle-switch {
+      width: 44px; height: 24px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle-switch.on { background: var(--holo-cyan); }
+    .toggle-switch .knob {
+      width: 20px; height: 20px;
+      background: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: left 0.2s;
+    }
+    .toggle-switch.on .knob { left: 22px; }
+
+    /* Particle container */
+    .particles {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .particle {
+      position: absolute;
+      width: 3px; height: 3px;
+      background: var(--holo-cyan);
+      border-radius: 50%;
+      animation: particleFloat 6s infinite ease-in-out;
+      opacity: 0.6;
+    }
+
+    /* Screen label (visible outside phone) */
+    .screen-label {
+      text-align: center;
+      margin-top: 16px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      color: var(--muted-ash);
+      letter-spacing: 1px;
+    }
+
+    /* ── Screen-specific styles ── */
+
+    /* SCREEN 1: Onboarding */
+    .screen-onboarding {
+      background: var(--black);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      position: relative;
+    }
+
+    .screen-onboarding .scan-rings {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .scan-ring {
+      position: absolute;
+      width: 140px; height: 140px;
+      border: 1px solid rgba(0,229,255,0.4);
+      border-radius: 50%;
+      animation: scanRing 2s infinite ease-out;
+    }
+
+    .scan-ring:nth-child(2) { animation-delay: 0.5s; }
+    .scan-ring:nth-child(3) { animation-delay: 1s; }
+
+    .silhouette {
+      width: 80px; height: 120px;
+      background: linear-gradient(180deg, rgba(0,229,255,0.3), transparent);
+      border-radius: 40px 40px 0 0;
+      position: relative;
+      z-index: 2;
+      margin-bottom: 20px;
+    }
+
+    .onboarding-text {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--system-silver);
+      line-height: 1.6;
+      opacity: 0;
+      animation: fadeInUp 1s ease-out 0.5s forwards;
+    }
+
+    .onboarding-text.delay-1 { animation-delay: 1.5s; }
+    .onboarding-text.delay-2 { animation-delay: 2.5s; }
+    .onboarding-text.delay-3 { animation-delay: 3.5s; }
+    .onboarding-text.delay-4 { animation-delay: 4.5s; }
+
+    .onboarding-rank {
+      font-family: 'Orbitron', monospace;
+      font-size: 48px;
+      font-weight: 900;
+      color: var(--hp-crimson);
+      letter-spacing: 4px;
+      opacity: 0;
+      animation: scaleIn 0.6s ease-out 3.8s forwards;
+    }
+
+    .onboarding-arise {
+      font-family: 'Orbitron', monospace;
+      font-size: 52px;
+      font-weight: 900;
+      color: var(--holo-cyan);
+      letter-spacing: 8px;
+      text-shadow: 0 0 30px rgba(0,229,255,0.5), 0 0 60px rgba(0,229,255,0.2);
+      opacity: 0;
+      animation: goldGlow 1.5s ease-out 5.2s forwards;
+      animation-fill-mode: both;
+    }
+
+    .typewriter-line {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      color: var(--holo-cyan);
+      overflow: hidden;
+      white-space: nowrap;
+      border-right: 2px solid var(--holo-cyan);
+      width: 0;
+      animation: typewriter 2s steps(30, end) 1s forwards, blinkCursor 0.7s step-end infinite;
+    }
+
+    /* SCREEN 2: Home Dashboard */
+    .screen-home {
+      background: var(--void-navy);
+      min-height: 100%;
+      padding: 8px 0 70px;
+    }
+
+    .home-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px 12px;
+    }
+
+    .arise-logo {
+      font-family: 'Orbitron', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      color: var(--holo-cyan);
+    }
+
+    .notif-bell {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--slate-surface);
+      border: 1px solid rgba(0,229,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .notif-bell .dot {
+      position: absolute;
+      top: 8px; right: 8px;
+      width: 8px; height: 8px;
+      background: var(--hp-crimson);
+      border-radius: 50%;
+      animation: pulseGlow 2s infinite;
+    }
+
+    .rank-card {
+      margin: 0 16px 16px;
+      background: linear-gradient(135deg, var(--deep-abyss), var(--slate-surface));
+      border: 1px solid rgba(0,229,255,0.3);
+      border-radius: 14px;
+      padding: 16px;
+      animation: panelMaterialize 0.4s ease-out;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .rank-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--holo-cyan), transparent);
+    }
+
+    .rank-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .hunter-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--pure-white);
+    }
+
+    .rank-badge-large {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--system-blue), #1565C0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', monospace;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--pure-white);
+      box-shadow: 0 0 10px rgba(33,150,243,0.4);
+    }
+
+    .xp-section { margin-bottom: 4px; }
+    .xp-info {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--muted-ash);
+      margin-bottom: 6px;
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 0;
+      margin: 0 16px 12px;
+      background: var(--slate-surface);
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .stat-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--muted-ash);
+      letter-spacing: 1px;
+    }
+
+    .stat-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .stat-str { color: var(--system-blue); }
+    .stat-agi { color: var(--agility-green); }
+    .stat-int { color: #BA68C8; }
+    .stat-vit { color: var(--vitality-red); }
+    .stat-sen { color: var(--sense-cyan); }
+
+    .system-msg {
+      margin: 0 16px 16px;
+      padding: 10px 12px;
+      background: rgba(0,229,255,0.06);
+      border-left: 2px solid var(--holo-cyan);
+      border-radius: 0 8px 8px 0;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--system-silver);
+      animation: questPopup 0.5s ease-out;
+    }
+
+    .quest-section { padding: 0 16px; }
+    .quest-section-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted-ash);
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    .quest-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--slate-surface);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      border: 1px solid rgba(255,255,255,0.04);
+      transition: all 0.2s;
+    }
+
+    .quest-item.urgent {
+      border: 1px solid rgba(255,23,68,0.3);
+      animation: redPulseGlow 2s infinite;
+    }
+
+    .quest-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: rgba(0,229,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .quest-info { flex: 1; min-width: 0; }
+    .quest-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--pure-white);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .quest-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .quest-progress-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--muted-ash);
+    }
+    .quest-xp {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--arise-gold);
+    }
+
+    /* SCREEN 3: Quest Board */
+    .screen-quest {
+      background: var(--void-navy);
+      min-height: 100%;
+      padding: 8px 0 70px;
+    }
+
+    .quest-header {
+      padding: 8px 16px 12px;
+      text-align: center;
+    }
+
+    .quest-tabs {
+      display: flex;
+      gap: 6px;
+      padding: 0 12px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+    }
+    .quest-tabs::-webkit-scrollbar { height: 0; }
+
+    .quest-tab {
+      padding: 6px 12px;
+      background: var(--slate-surface);
+      border-radius: 20px;
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      letter-spacing: 1px;
+      color: var(--muted-ash);
+      border: 1px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .quest-tab.active {
+      background: rgba(0,229,255,0.15);
+      color: var(--holo-cyan);
+      border-color: rgba(0,229,255,0.3);
+    }
+
+    .dungeon-card {
+      margin: 0 16px 16px;
+      padding: 16px;
+      background: linear-gradient(135deg, rgba(224,64,251,0.15), rgba(156,39,176,0.1));
+      border: 1px solid rgba(224,64,251,0.3);
+      border-radius: 14px;
+      position: relative;
+      overflow: hidden;
+      animation: panelMaterialize 0.4s ease-out;
+    }
+
+    .dungeon-card::before {
+      content: '';
+      position: absolute;
+      top: -50%; right: -50%;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(224,64,251,0.15), transparent 70%);
+      animation: float 4s infinite ease-in-out;
+    }
+
+    .dungeon-icon-wrap {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--gate-purple), #9C27B0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-bottom: 10px;
+      box-shadow: 0 0 15px rgba(224,64,251,0.4);
+      animation: gateGlow 3s infinite alternate;
+    }
+
+    .dungeon-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--pure-white);
+      margin-bottom: 4px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .dungeon-subtitle {
+      font-size: 11px;
+      color: var(--system-silver);
+      position: relative;
+      z-index: 2;
+    }
+
+    .quest-card {
+      margin: 0 16px 8px;
+      padding: 12px;
+      background: var(--slate-surface);
+      border-radius: 10px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      animation: panelMaterialize 0.3s ease-out;
+    }
+
+    .quest-card .accent-bar {
+      width: 3px;
+      align-self: stretch;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* SCREEN 4: Hunter Profile */
+    .screen-profile {
+      background: var(--void-navy);
+      min-height: 100%;
+      padding: 8px 0 70px;
+    }
+
+    .avatar-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 16px;
+    }
+
+    .avatar-ring {
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      background: var(--deep-abyss);
+      border: 2px solid rgba(0,229,255,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      position: relative;
+      animation: avatarPulse 3s infinite;
+      margin-bottom: 12px;
+    }
+
+    .avatar-ring .rank-overlay {
+      position: absolute;
+      bottom: -4px; right: -4px;
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, var(--system-blue), #1565C0);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      font-weight: 800;
+      border: 2px solid var(--void-navy);
+    }
+
+    .profile-name {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--pure-white);
+    }
+
+    .profile-class {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--holo-cyan);
+      margin-top: 2px;
+    }
+
+    .stats-grid {
+      padding: 0 16px;
+      margin-bottom: 16px;
+    }
+
+    .stat-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .stat-row-label {
+      width: 30px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .stat-row-bar {
+      flex: 1;
+      height: 6px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .stat-row-fill {
+      height: 100%;
+      border-radius: 3px;
+      animation: barFill 1s ease-out forwards;
+    }
+
+    .stat-row-value {
+      width: 30px;
+      text-align: right;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .titles-section {
+      padding: 0 16px;
+      margin-bottom: 16px;
+    }
+
+    .section-header {
+      font-family: 'Orbitron', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--muted-ash);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    .title-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .title-chip {
+      padding: 5px 10px;
+      border-radius: 16px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+    }
+
+    .title-chip.gold {
+      background: rgba(255,215,0,0.12);
+      color: var(--arise-gold);
+      border: 1px solid rgba(255,215,0,0.3);
+    }
+    .title-chip.blue {
+      background: rgba(33,150,243,0.12);
+      color: var(--system-blue);
+      border: 1px solid rgba(33,150,243,0.3);
+    }
+    .title-chip.locked {
+      background: rgba(255,255,255,0.03);
+      color: var(--muted-ash);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .rank-track {
+      padding: 0 16px;
+    }
+
+    .rank-dots {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+    }
+
+    .rank-dot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .rank-dot .dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.2);
+      transition: all 0.3s;
+    }
+
+    .rank-dot.completed .dot {
+      background: var(--success-green);
+      border-color: var(--success-green);
+      box-shadow: 0 0 8px rgba(0,230,118,0.4);
+    }
+
+    .rank-dot.current .dot {
+      background: var(--system-blue);
+      border-color: var(--system-blue);
+      box-shadow: 0 0 12px rgba(33,150,243,0.5);
+      animation: pulseGlow 2s infinite;
+    }
+
+    .rank-dot .label {
+      font-family: 'Orbitron', monospace;
+      font-size: 8px;
+      color: var(--muted-ash);
+    }
+
+    .rank-dot.current .label { color: var(--system-blue); }
+    .rank-dot.completed .label { color: var(--success-green); }
+
+    /* SCREEN 5: System Notification */
+    .screen-notification {
+      background: var(--black);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+      text-align: center;
+    }
+
+    .notif-icon-wrap {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: rgba(0,229,255,0.1);
+      border: 2px solid rgba(0,229,255,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 16px;
+      animation: pulseGlow 2s infinite;
+    }
+
+    .notif-system {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      color: var(--bracket-cyan);
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+
+    .notif-headline {
+      font-family: 'Orbitron', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--pure-white);
+      margin-bottom: 16px;
+      letter-spacing: 1px;
+    }
+
+    .notif-body {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--system-silver);
+      line-height: 1.6;
+      margin-bottom: 24px;
+      max-width: 280px;
+    }
+
+    .penalty-box {
+      background: rgba(255,23,68,0.08);
+      border: 1px solid rgba(255,23,68,0.3);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 24px;
+      max-width: 280px;
+      width: 100%;
+      animation: redPulseGlow 2s infinite;
+    }
+
+    .penalty-box .penalty-title {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      color: var(--hp-crimson);
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .penalty-box .penalty-desc {
+      font-size: 12px;
+      color: var(--system-silver);
+    }
+
+    .notif-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 280px;
+    }
+
+    .btn-glow-blue {
+      background: linear-gradient(135deg, var(--holo-cyan), var(--system-blue));
+      color: var(--black);
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 1px;
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      cursor: pointer;
+      animation: pulseGlow 2s infinite;
+    }
+
+    /* SCREEN 6: Penalty Screen */
+    .screen-penalty {
+      background: var(--black);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      position: relative;
+    }
+
+    .screen-penalty .scanlines::after {
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(255,23,68,0.03) 2px,
+        rgba(255,23,68,0.03) 4px
+      );
+    }
+
+    .penalty-skull {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: rgba(255,23,68,0.1);
+      border: 2px solid rgba(255,23,68,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin-bottom: 16px;
+      animation: shake 1s infinite;
+    }
+
+    .penalty-system {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--hp-crimson);
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+
+    .penalty-headline {
+      font-family: 'Orbitron', monospace;
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--hp-crimson);
+      margin-bottom: 24px;
+      letter-spacing: 2px;
+    }
+
+    .debuff-list {
+      width: 100%;
+      max-width: 280px;
+      margin-bottom: 24px;
+    }
+
+    .debuff-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      background: var(--slate-surface);
+      border-left: 3px solid var(--hp-crimson);
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 8px;
+      text-align: left;
+      animation: panelMaterialize 0.3s ease-out forwards;
+      opacity: 0;
+    }
+
+    .debuff-item:nth-child(1) { animation-delay: 0.1s; }
+    .debuff-item:nth-child(2) { animation-delay: 0.2s; }
+    .debuff-item:nth-child(3) { animation-delay: 0.3s; }
+    .debuff-item:nth-child(4) { animation-delay: 0.4s; }
+
+    .debuff-name {
+      font-size: 12px;
+      color: var(--system-silver);
+    }
+
+    .debuff-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--hp-crimson);
+    }
+
+    .btn-penalty {
+      width: 100%;
+      max-width: 280px;
+      background: rgba(255,23,68,0.15);
+      border: 1px solid rgba(255,23,68,0.4);
+      color: var(--hp-crimson);
+      font-family: 'Orbitron', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      padding: 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      animation: redPulseGlow 2s infinite;
+    }
+
+    /* SCREEN 7: Reward Claim */
+    .screen-reward {
+      background: rgba(3,7,18,0.95);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      position: relative;
+    }
+
+    .reward-modal {
+      background: var(--deep-abyss);
+      border: 1px solid rgba(255,215,0,0.4);
+      border-radius: 16px;
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 290px;
+      animation: panelMaterialize 0.4s ease-out, pulseGlowGold 3s infinite;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .reward-modal::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--arise-gold), transparent);
+    }
+
+    @keyframes pulseGlowGold {
+      0%, 100% { box-shadow: 0 0 15px rgba(255,215,0,0.2); }
+      50% { box-shadow: 0 0 30px rgba(255,215,0,0.4), 0 0 60px rgba(255,215,0,0.1); }
+    }
+
+    .reward-sparkle {
+      font-size: 40px;
+      margin-bottom: 12px;
+      animation: bounce 1s infinite;
+    }
+
+    .reward-system {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--arise-gold);
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+
+    .reward-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--pure-white);
+      margin-bottom: 20px;
+    }
+
+    .reward-items {
+      text-align: left;
+      margin-bottom: 20px;
+    }
+
+    .reward-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .reward-item-icon {
+      width: 24px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .reward-item-text {
+      font-size: 12px;
+      color: var(--system-silver);
+    }
+
+    .reward-item-value {
+      margin-left: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--arise-gold);
+    }
+
+    .btn-claim {
+      width: 100%;
+      background: linear-gradient(135deg, var(--arise-gold), #FFA000);
+      color: var(--black);
+      font-family: 'Orbitron', monospace;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      cursor: pointer;
+      animation: pulseGlowGold 2s infinite;
+    }
+
+    /* SCREEN 8: Dungeon Entry */
+    .screen-dungeon {
+      background: var(--black);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      position: relative;
+    }
+
+    .gate-portal {
+      width: 160px; height: 160px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(224,64,251,0.3), rgba(156,39,176,0.1) 60%, transparent 70%);
+      border: 2px solid rgba(224,64,251,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      position: relative;
+      animation: gateGlow 3s infinite alternate;
+    }
+
+    .gate-portal::before {
+      content: '';
+      position: absolute;
+      inset: -10px;
+      border: 1px solid rgba(224,64,251,0.15);
+      border-radius: 50%;
+      animation: ripple 2s infinite;
+    }
+
+    .gate-portal::after {
+      content: '';
+      position: absolute;
+      inset: -20px;
+      border: 1px solid rgba(224,64,251,0.08);
+      border-radius: 50%;
+      animation: ripple 2s infinite 0.5s;
+    }
+
+    .gate-portal .gate-icon {
+      font-size: 48px;
+    }
+
+    .dungeon-tag {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      color: var(--gate-purple);
+      letter-spacing: 3px;
+      margin-bottom: 12px;
+    }
+
+    .dungeon-name {
+      font-family: 'Orbitron', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--pure-white);
+      margin-bottom: 12px;
+      letter-spacing: 1px;
+    }
+
+    .dungeon-desc {
+      font-size: 12px;
+      color: var(--system-silver);
+      line-height: 1.6;
+      margin-bottom: 20px;
+      max-width: 280px;
+    }
+
+    .rewards-preview {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .reward-pill {
+      padding: 6px 12px;
+      background: rgba(255,215,0,0.1);
+      border: 1px solid rgba(255,215,0,0.2);
+      border-radius: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--arise-gold);
+    }
+
+    .btn-enter {
+      width: 100%;
+      max-width: 280px;
+      background: linear-gradient(135deg, var(--gate-purple), #9C27B0);
+      color: var(--pure-white);
+      font-family: 'Orbitron', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      border: none;
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      margin-bottom: 12px;
+      box-shadow: 0 0 20px rgba(224,64,251,0.3);
+    }
+
+    .dungeon-warning {
+      font-size: 10px;
+      color: var(--hp-crimson);
+      max-width: 260px;
+      line-height: 1.4;
+    }
+
+    /* SCREEN 9: Chain Quest */
+    .screen-chain {
+      background: var(--void-navy);
+      height: 100%;
+      padding: 8px 16px 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chain-header {
+      text-align: center;
+      padding: 16px 0;
+    }
+
+    .chain-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--pure-white);
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .chain-subtitle {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--arise-gold);
+    }
+
+    .chain-visual {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: center;
+      padding: 12px;
+      margin-bottom: 16px;
+      background: var(--slate-surface);
+      border-radius: 12px;
+    }
+
+    .chain-node {
+      width: 16px; height: 16px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .chain-node.completed {
+      background: rgba(0,230,118,0.5);
+      border-color: var(--success-green);
+    }
+
+    .chain-node.current {
+      background: var(--arise-gold);
+      border-color: var(--arise-gold);
+      animation: pulseGlowGold 1.5s infinite;
+    }
+
+    .chain-quest-card {
+      background: var(--slate-surface);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chain-quest-name {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--pure-white);
+      margin-bottom: 8px;
+    }
+
+    .chain-difficulty {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .streak-info {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--success-green);
+      margin-bottom: 16px;
+    }
+
+    .chain-rewards {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .chain-reward-tag {
+      padding: 4px 10px;
+      background: rgba(0,229,255,0.08);
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--holo-cyan);
+    }
+
+    .chain-warning {
+      font-size: 11px;
+      color: var(--hp-crimson);
+      margin-bottom: auto;
+      padding: 10px;
+      background: rgba(255,23,68,0.06);
+      border-radius: 8px;
+    }
+
+    .btn-chain {
+      width: 100%;
+      background: linear-gradient(135deg, var(--arise-gold), #FFA000);
+      color: var(--black);
+      font-family: 'Orbitron', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      cursor: pointer;
+      margin-top: 16px;
+    }
+
+    /* SCREEN 10: Settings */
+    .screen-settings {
+      background: var(--void-navy);
+      min-height: 100%;
+      padding: 8px 0 24px;
+    }
+
+    .settings-header {
+      text-align: center;
+      padding: 12px 16px 16px;
+    }
+
+    .settings-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--holo-cyan);
+      letter-spacing: 2px;
+    }
+
+    .settings-section {
+      padding: 0 16px;
+      margin-bottom: 20px;
+    }
+
+    .settings-section-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--muted-ash);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    .setting-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .setting-label {
+      font-size: 13px;
+      color: var(--pure-white);
+    }
+
+    .setting-desc {
+      font-size: 11px;
+      color: var(--muted-ash);
+      margin-top: 2px;
+    }
+
+    .integration-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      background: var(--slate-surface);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .integration-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: rgba(0,229,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .integration-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--pure-white);
+    }
+
+    .integration-status {
+      font-size: 10px;
+      color: var(--success-green);
+      font-family: 'Share Tech Mono', monospace;
+    }
+
+    .danger-zone {
+      margin: 0 16px;
+      padding: 16px;
+      border: 1px solid rgba(255,23,68,0.3);
+      border-radius: 12px;
+      background: rgba(255,23,68,0.04);
+    }
+
+    .danger-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 10px;
+      color: var(--hp-crimson);
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+    }
+
+    .danger-btn {
+      width: 100%;
+      padding: 10px;
+      background: rgba(255,23,68,0.1);
+      border: 1px solid rgba(255,23,68,0.3);
+      border-radius: 8px;
+      color: var(--hp-crimson);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+
+    .version {
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--muted-ash);
+      margin-top: 20px;
+    }
+
+    /* SCREEN 11: The Pact */
+    .screen-pact {
+      background: var(--black);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+      text-align: center;
+      position: relative;
+    }
+
+    .pact-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--holo-cyan);
+      letter-spacing: 4px;
+      margin-bottom: 16px;
+      text-shadow: 0 0 20px rgba(0,229,255,0.4);
+    }
+
+    .pact-divider {
+      width: 60px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--holo-cyan), transparent);
+      margin-bottom: 16px;
+    }
+
+    .pact-warning {
+      font-size: 12px;
+      color: var(--system-silver);
+      line-height: 1.7;
+      margin-bottom: 20px;
+      max-width: 290px;
+    }
+
+    .pact-laws {
+      text-align: left;
+      width: 100%;
+      max-width: 290px;
+      margin-bottom: 24px;
+    }
+
+    .pact-law {
+      display: flex;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 12px;
+      color: var(--system-silver);
+      line-height: 1.5;
+    }
+
+    .pact-law-number {
+      font-family: 'Orbitron', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--holo-cyan);
+      flex-shrink: 0;
+    }
+
+    .pact-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 290px;
+      margin-bottom: 20px;
+    }
+
+    .btn-pact-accept {
+      background: linear-gradient(135deg, var(--holo-cyan), var(--deep-cyan));
+      color: var(--black);
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 1px;
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      cursor: pointer;
+      animation: pulseGlow 3s infinite;
+    }
+
+    .btn-pact-decline {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.15);
+      color: var(--muted-ash);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .pact-signature {
+      width: 100%;
+      max-width: 290px;
+      padding: 16px;
+      border: 1px dashed rgba(0,229,255,0.2);
+      border-radius: 10px;
+    }
+
+    .pact-signature-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      color: var(--muted-ash);
+      letter-spacing: 1px;
+    }
+
+    /* SCREEN 12: Leaderboard */
+    .screen-leaderboard {
+      background: var(--void-navy);
+      height: 100%;
+      padding: 8px 0 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .lb-header {
+      text-align: center;
+      padding: 8px 16px 12px;
+    }
+
+    .lb-tabs {
+      display: flex;
+      gap: 6px;
+      padding: 0 16px;
+      margin-bottom: 12px;
+    }
+
+    .lb-tab {
+      flex: 1;
+      padding: 8px;
+      text-align: center;
+      background: var(--slate-surface);
+      border-radius: 8px;
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      letter-spacing: 1px;
+      color: var(--muted-ash);
+      border: 1px solid transparent;
+      cursor: pointer;
+    }
+
+    .lb-tab.active {
+      background: rgba(0,229,255,0.12);
+      color: var(--holo-cyan);
+      border-color: rgba(0,229,255,0.25);
+    }
+
+    .lb-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 16px;
+    }
+
+    .lb-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--slate-surface);
+      border-radius: 10px;
+      margin-bottom: 6px;
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+
+    .lb-rank {
+      width: 28px;
+      text-align: center;
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .lb-rank.gold { color: var(--arise-gold); }
+    .lb-rank.silver { color: #C0C0C0; }
+    .lb-rank.bronze { color: #CD7F32; }
+
+    .lb-user {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .lb-username {
+      font-size: 12px;
+      color: var(--system-silver);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lb-rank-badge {
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .lb-level {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--muted-ash);
+      width: 32px;
+      text-align: right;
+    }
+
+    .lb-row.you {
+      border: 1px solid rgba(0,229,255,0.3);
+      background: rgba(0,229,255,0.06);
+    }
+
+    .lb-cta {
+      margin: 12px 16px 16px;
+      padding: 12px;
+      background: linear-gradient(135deg, rgba(0,229,255,0.1), rgba(33,150,243,0.1));
+      border: 1px dashed rgba(0,229,255,0.3);
+      border-radius: 10px;
+      text-align: center;
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      color: var(--holo-cyan);
+      letter-spacing: 1px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       PAGE HEADER
+       ═══════════════════════════════════════════ -->
+  <div class="page-header">
+    <div class="page-title">
+      <span class="glitch-letter" data-letter="A">A</span><span class="glitch-letter" data-letter="R">R</span><span class="glitch-letter" data-letter="I">I</span><span class="glitch-letter" data-letter="S">S</span><span class="glitch-letter" data-letter="E">E</span>
+    </div>
+    <div class="page-subtitle">Solo Leveling Life System &mdash; Android Concept Mockup</div>
+    <div class="page-subtitle" style="margin-top:6px; opacity:0.7;">FLUTTER &times; FASTAPI &mdash; ANDROID ONLY &mdash; RESEARCH-BACKED DESIGN SYSTEM</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       PHONE GRID — 12 Screens
+       ═══════════════════════════════════════════ -->
+  <div class="phone-grid">
+
+    <!-- ═══════════════════════════════════════════
+         SCREEN 1: ONBOARDING — THE ARISE MOMENT
+         ═══════════════════════════════════════════ -->
+    <div class="phone-wrapper">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen scanlines" style="scrollbar-width:none;">
+          <div class="screen-onboarding">
+            <!-- Scanning Rings -->
+            <div class="scan-rings">
+              <div class="scan-ring"></div>
+              <div class="scan-ring"></div>
+              <div class="scan-ring"></div>
+            </div>
+
+            <!-- Silhouette -->
+            <div class="silhouette"></div>
+
+            <!-- Text Sequence -->
+            <div style="margin-bottom:24px;">
+              <div class="typewriter-line" style="animation-delay:0.3s; margin-bottom:20px;">Initializing... Player candidate detected.</div>
+            </div>
+
+            <div class="onboarding-text" style="font-size:13px; margin-bottom:16px;">
+              You feel something watching you.
+            </div>
+
+            <div class="onboarding-text delay-1" style="font-size:12px; color:var(--holo-cyan); font-family:'Share Tech Mono',monospace; margin-bottom:20px;">
+              [SYSTEM] Scan complete.
+            </div>
+
+            <div class="onboarding-text delay-2" style="font-size:13px; margin-bottom:12px;">
+              You have been assigned<br>the lowest possible rank.
+            </div>
+
+            <div class="onboarding-rank">E-Rank</div>
+
+            <div class="onboarding-text delay-3" style="font-size:13px; margin-top:20px; margin-bottom:16px;">
+              However... an anomaly<br>has been detected.
+            </div>
+
+            <div class="onboarding-arise">ARISE</div>
+
+            <div class="onboarding-text delay-4" style="font-size:11px; margin-top:20px; font-family:'Share Tech Mono',monospace; color:var(--holo-cyan);">
+              &gt; The System has chosen you.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label">01 — ONBOARDING</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         SCREEN 2: HOME DASHBOARD
+         ═══════════════════════════════════════════ -->
+    <div class="phone-wrapper">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen scanlines" style="scrollbar-width:none;">
+          <div class="screen-home">
+            <!-- Status Bar -->
+            <div class="status-bar">
+              <span class="time">9:41</span>
+              <span class="icons">
+                <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M1 7.5H2.5V9H1V7.5ZM4 6H5.5V9H4V6ZM7 4H8.5V9H7V4ZM10 2H11.5V9H10V2Z" fill="white" opacity="0.8"/><rect x="12" y="1" width="1.5" height="8" rx="0.5" fill="white" opacity="0.8"/></svg>
+                <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M6 1L1 5H3V9H9V5H11L6 1Z" fill="white" opacity="0.8"/></svg>
+                <div class="battery"><div class="battery-fill"></div></div>
+              </span>
+            </div>
+
+            <!-- Header -->
+            <div class="home-header">
+              <div class="arise-logo">ARISE</div>
+              <div class="notif-bell">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                <div class="dot"></div>
+              </div>
+            </div>
+
+            <!-- Rank Card -->
+            <div class="rank-card">
+              <div class="rank-header">
+                <div>
+                  <div class="hunter-name">JINWOO_00</div>
+                  <div style="font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--muted-ash); margin-top:2px;">HUNTER ID: #SL-4721</div>
+                </div>
+                <div class="rank-badge-large">C</div>
+              </div>
+              <div class="xp-section">
+                <div class="xp-info">
+                  <span>LV. 24</span>
+                  <span>4,250 / 5,000 XP</span>
+                </div>
+                <div class="xp-bar">
+                  <div class="xp-bar-fill" style="--target-width:85%; width:85%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="stats-row">
+              <div class="stat-item">
+                <div class="stat-label">STR</div>
+                <div class="stat-num stat-str">38</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">AGI</div>
+                <div class="stat-num stat-agi">45</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">INT</div>
+                <div class="stat-num stat-int">32</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">VIT</div>
+                <div class="stat-num stat-vit">40</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">SEN</div>
+                <div class="stat-num stat-sen">28</div>
+              </div>
+            </div>
+
+            <!-- System Message -->
+            <div class="system-msg">
+              <span class="bracket-text">[SYSTEM]</span> Daily quests reset in 4h 22m. Complete all 3 for +150 XP bonus.
+            </div>
+
+            <!-- Daily Quests -->
+            <div class="quest-section">
+              <div class="quest-section-title">Daily Quests</div>
+
+              <div class="quest-item">
+                <div class="quest-icon">💧</div>
+                <div class="quest-info">
+                  <div class="quest-title">Hydration Protocol</div>
+                  <div class="quest-meta">
+                    <div class="progress-bar" style="width:60px;"><div class="progress-bar-fill" style="width:75%;"></div></div>
+                    <span class="quest-progress-text">6/8 cups</span>
+                    <span class="quest-xp">+50 XP</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="quest-item">
+                <div class="quest-icon">🏃</div>
+                <div class="quest-info">
+                  <div class="quest-title">Morning Run 5km</div>
+                  <div class="quest-meta">
+                    <div class="progress-bar" style="width:60px;"><div class="progress-bar-fill" style="width:100%;"></div></div>
+                    <span class="quest-progress-text">COMPLETE</span>
+                    <span class="quest-xp">+75 XP</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="quest-item">
+                <div class="quest-icon">📖</div>
+                <div class="quest-info">
+                  <div class="quest-title">Read 30 Minutes</div>
+                  <div class="quest-meta">
+                    <div class="progress-bar" style="width:60px;"><div class="progress-bar-fill" style="width:40%;"></div></div>
+                    <span class="quest-progress-text">12/30 min</span>
+                    <span class="quest-xp">+50 XP</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="quest-item urgent">
+                <div class="quest-icon" style="background:rgba(255,23,68,0.1);">⚡</div>
+                <div class="quest-info">
+                  <div class="quest-title">Cold Shower — 2 Minutes</div>
+                  <div class="quest-meta">
+                    <span class="quest-progress-text" style="color:var(--hp-crimson);">URGENT — 2h left</span>
+                    <span class="quest-xp">+100 XP</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom Nav -->
+            <div class="bottom-nav">
+              <div class="nav-item active">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                <span>HOME</span>
+              </div>
+              <div class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                <span>QUESTS</span>
+              </div>
+              <div class="nav-center">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <div class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <span>HUNTER</span>
+              </div>
+              <div class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+                <span>RANK</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label">02 — HOME DASHBOARD</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         SCREEN 3: QUEST BOARD
+         ═══════════════════════════════════════════ -->
+    <div class="phone-wrapper">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen scanlines" style="scrollbar-width:none;">
+          <div class="screen-quest">
+            <!-- Status Bar -->
+            <div class="status-bar">
+              <span class="time">9:41</span>
+              <span class="icons">
+                <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M1 7.5H2.5V9H1V7.5ZM4 6H5.5V9H4V6ZM7 4H8.5V9H7V4ZM10 2H11.5V9H10V2Z" fill="white" opacity="0.8"/><rect x="12" y="1" width="1.5" height="8" rx="0.5" fill="white" opacity="0.8"/></svg>
+                <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M6 1L1 5H3V9H9V5H11L6 1Z" fill="white" opacity="0.8"/></svg>
+                <div class="battery"><div class="battery-fill"></div></div>
+              </span>
+            </div>
+
+            <!-- Header -->
+            <div class="quest-header">
+              <div style="font-family:'Orbitron',monospace; font-size:18px; font-weight:700; color:var(--pure-white); letter-spacing:2px;">QUEST BOARD</div>
+              <div style="font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--muted-ash); margin-top:4px;">8 Active Quests &mdash; 3 Urgent</div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="quest-tabs">
+              <div class="quest-tab active">DAILY</div>
+              <div class="quest-tab">WEEKLY</div>
+              <div class="quest-tab">CHAIN</div>
+              <div class="quest-tab">DUNGEON</div>
+              <div class="quest-tab">CUSTOM</div>
+            </div>
+
+            <!-- Dungeon Card -->
+            <div class="dungeon-card">
+              <div class="dungeon-icon-wrap">🌀</div>
+              <div class="dungeon-title">30-DAY DUNGEON: Iron Body</div>
+              <div class="dungeon-subtitle">Progressive overload training &mdash; Day 17 of 30</div>
+              <div style="margin-top:10px;">
+                <div class="progress-bar" style="height:6px;"><div class="progress-bar-fill" style="width:57%; height:6px;"></div></div>
+                <div style="font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--muted-ash); margin-top:4px; text-align:right;">57% COMPLETE</div>
+              </div>
+            </div>
+
+            <!-- Quest Cards -->
+            <div class="quest-card">
+              <div class="accent-bar" style="background:var(--success-green);"></div>
+              <div style="flex:1; min-width:0;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                  <span style="font-size:12px; font-weight:600; color:var(--pure-white);">Drink 8 Glasses of Water</span>
+                  <span style="margin-left:auto;" class="difficulty-badge badge-d">D</span>
+                </div>
+                <div style="font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--muted-ash); margin-bottom:6px;">[DAILY] &mdash; Physical</div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div class="progress-bar" style="width:80px;"><div class="progress-bar-fill" style="width:75%;"></div></div>
+                  <span style="font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--muted-ash);">+50 XP</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="quest-card">
+              <div class="accent-bar" style="background:var(--system-blue);"></div>
+              <div style="flex:1; min-width:0;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                  <span style="font-size:12px; font-weight:600; color:var(--pure-white);">Meditate for 20 Minutes</span>
+                  <span style="margin-left:auto;" class="difficulty-badge badge-c">C</span>
+                </div>
+                <div style="font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--muted-ash); margin-bottom:6px;">[DAILY] &mdash; Mental</div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div class="progress-bar" style="width:80px;"><div class="progress-bar-fill" style="width:30%;"></div></div>
+                  <span style="font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--muted-ash);">+75 XP</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="quest-card">
+              <div class="accent-bar" style="background:#9C27B0;"></div>
+              <div style="flex:1; min-width:0;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                  <span style="font-size:12px; font-weight:600; color:var(--pure-white);">Complete Deep Work Session</span>
+                  <span style="margin-left:auto;" class="difficulty-badge badge-b">B</span>
+                </div>
+                <div style="font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--muted-ash); margin-bottom:6px;">[WEEKLY] &mdash; INT-based</div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div class="progress-bar" style="width:80px;"><div class="progress-bar-fill" style="width:60%;"></div></div>
+                  <span style="font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--muted-ash);">+150 XP</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="quest-card">
+              <div class="accent-bar" style="background:#FF9800;"></div>
+              <div style="flex:1; min-width:0;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                  <span style="font-size:12px; font-weight:600; color:var(--pure-white);">5AM Wake-Up Protocol</span>
+                  <span style="margin-left:auto;" class="difficulty-badge badge-a">A</span>
+                </div>
+                <div style="font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--muted-ash); margin-bottom:6px;">[CHAIN] &mdash; Discipline</div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div class="progress-bar" style="width:80px;"><div class="progress-bar-fill" style="width:40%;"></div></div>
+                  <span style="font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--muted-ash);">+200 XP</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="quest-card">
+              <div class="accent-bar" style="background:var(--arise-gold);"></div>
+              <div style="flex:1; min-width:0;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                  <span style="font-size:12px; font-weight:600; color:var(--pure-white);">Iron Will Challenge</span>
+                  <span style="margin-left:auto;" class="difficulty-badge badge-s">S</span>
+                </div>
+                <div style="font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--arise-gold); margin-bottom:6px;">[DUNGEON] &mdash; 30 Day</div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div class="progress-bar" style="width:80px;"><div class="progress-bar-fill" style="width:57%;"></div></div>
+                  <span style="font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--arise-gold);">+3,000 XP</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom Nav -->
+            <div class="bottom-nav">
+              <div class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                <span>HOME</span>
+              </div>
+              <div class="nav-item active">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                <span>QUESTS</span>
+              </div>
+              <div class="nav-center">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <div class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <span>HUNTER</span>
+              </div>
+              <div class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+                <span>RANK</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label">03 — QUEST BOARD</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         SCREEN 4: HUNTER PROFILE
+         ═══════════════════════════════════════════ -->
+    <div class="phone-wrapper">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen scanlines" style="scrollbar-width:none;">
+          <div class="screen-profile">
+            <!-- Status Bar -->
+            <div class="status-bar">
+              <span class="time">9:41</span>
+              <span class="icons">
+                <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M1 7.5H2.5V9H1V7.5ZM4 6H5.5V9H4V6ZM7 4H8.5V9H7V4ZM10 2H11.5V9H10V2Z" fill="white" opacity="0.8"/><rect x="12" y="1" width="1.5" height="8" rx="0.5" fill="white" opacity="0.8"/></svg>
+                <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M6 1L1 5H3V9H9V5H11L6 1Z" fill="white" opacity="0.8"/></svg>
+                <div class="battery"><div class="battery-fill"></div></div>
+              </span>
+            </div>
+
+            <!-- Avatar Section -->
+            <div class="avatar-section">
+              <div class="avatar-ring">
+                👤
+                <div class="rank-overlay">C</div>
+              </div>
+              <div class="profile-name">Sung Jinwoo</div>
+              <div class="profile-class">[Shadow Monarch Candidate]</div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+              <div class="section-header">Character Stats</div>
+
+              <div class="stat-row">
+                <div class="stat-row-label" style="color:var(--system-blue);">STR</div>
+                <div class="stat-row-bar">
+                  <div class="stat-row-fill" style="--target-width:38%; width:38%; background:linear-gradient(90deg, var(--system-blue), #4FC3F7);"></div>
+                </div>
+                <div class="stat-row-value" style="color:var(--system-blue);">38</div>
+              </div>
+
+              <div class="stat-row">
+                <div class="stat-row-label" style="color:var(--agility-green);">AGI</div>
+                <div class="stat-row-bar">
+                  <div class="stat-row-fill" style="--target-width:45%; width:45%; background:linear-gradient(90deg, var(--agility-green), #69F0AE);"></div>
+                </div>
+                <div class="stat-row-value" style="color:var(--agility-green);">45</div>
+              </div>
+
+              <div class="stat-row">
+                <div class="stat-row-label" style="color:#BA68C8;">INT</div>
+                <div class="stat-row-bar">
+                  <div class="stat-row-fill" style="--target-width:32%; width:32%; background:linear-gradient(90deg, #7B1FA2, #BA68C8);"></div>
+                </div>
+                <div class="stat-row-value" style="color:#BA68C8;">32</div>
+              </div>
+
+              <div class="stat-row">
+                <div class="stat-row-label" style="color:var(--vitality-red);">VIT</div>
+                <div class="stat-row-bar">
+                  <div class="stat-row-fill" style="--target-width:40%; width:40%; background:linear-gradient(90deg, var(--vitality-red), #FF8A80);"></div>
+                </div>
+                <div class="stat-row-value" style="color:var(--vitality-red);">40</div>
+              </div>
+
+              <div class="stat-row">
+                <div class="stat-row-label" style="color:var(--sense-cyan);">SEN</div>
+                <div class="stat-row-bar">
+                  <div class="stat-row-fill" style="--target-width:28%; width:28%; background:linear-gradient(90deg, var(--sense-cyan), #84FFFF);"></div>
+                </div>
+                <div class="stat-row-value" style="color:var(--sense-cyan);">28</div>
+              </div>
+            </div>
+
+            <!-- Titles -->
+            <div class="titles-section">
+              <div class="section-header">Earned Titles</div>
+              <div class="title-chips">
+                <div class="title-chip gold">🏆 Dungeon Diver</div>
+                <div class="title-chip blue">📖 Disciplined</div>
+                <div class="title-chip locked">🔒 Shadow Monarch</div>
+                <div class="title-chip locked">🔒 S-Rank Hunter</div>
+              </div>
+            </div>
+
+            <!-- Rank Progression -->
+            <div class="rank-track">
+              <div class="section-header">Rank Progression</div>
+              <div class="rank-dots">
+                <div class="rank-dot completed">
+                  <div class="dot"></div>
+                  <div class="label">E</div>
+                </div>
+                <div class="rank-dot completed">
+                  <div class="dot"></div>
+                  <div class="label">D</div>
+                </div>
+                <div class="rank-dot current">
+                  <div class="dot"></div>
+                  <div class="label">C</div>
+                </div>
+                <div class="rank-dot">
+                  <div class="dot"></div>
+                  <div class="label">B</div>
+                </div>
+                <div class="rank-dot">
+                  <div class="dot"></div>
+                  <div class="label">A</div>
+                </div>
+                <div class="rank-dot">
+                  <div class="dot"></div>
+                  <div class="label">S</div>
+                </div>
+              </div>
+              <div style="margin-top:8px;">
+                <div style="display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--muted-ash); margin-bottom:4px;">
+                  <span>C-Rank</span>
+                  <span>750 XP to B-Rank</span>
+                </div>
+                <div class="xp-bar"><div class="xp-bar-fill" style="--target-width:85%; width:85%;"></div></div>
+              </div>
+            </div>
+
+            <!-- Bottom Nav -->
+            <div class="bottom-nav">
+              <div class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                <span>HOME</span>
+              </div>
+              <div class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                <span>QUESTS</span>
+              </div>
+              <div class="nav-center">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <div class="nav-item active">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <span>HUNTER</span>
+              </div>
+              <div class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+                <span>RANK</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label">04 — HUNTER PROFILE</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         SCREEN 5: SYSTEM NOTIFICATION / ALARM
+         ═══════════════════════════════════════════ -->
+    <div class="phone-wrapper">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen scanlines" style="scrollbar-width:none;">
+          <div class="screen-notification">
+            <!-- Particles -->
+            <div class="particles">
+              <div class="particle" style="top:20%;left:15%;animation-delay:0s;"></div>
+              <div class="particle" style="top:40%;left:75%;animation-delay:1s;"></div>
+              <div class="particle" style="top:65%;left:25%;animation-delay:2s;"></div>
+              <div class="particle" style="top:15%;left:60%;animation-delay:0.5s;"></div>
+              <div class="particle" style="top:80%;left:70%;animation-delay:1.5s;"></div>
+              <div class="particle" style="top:50%;left:45%;animation-delay:3s;"></div>
+            </div>
+
+            <div class="notif-icon-wrap">🔔</div>
+
+            <div class="notif-system bracket-text">[SYSTEM NOTIFICATION]</div>
+
+            <div class="notif-headline">ARISE, HUNTER.</div>
+
+            <div class="notif-body">
+              Your workout window opens in <span style="color:var(--holo-cyan); font-weight:700;">15 minutes</span>. The System expects your presence.
+            </div>
+
+            <div class="penalty-box">
+              <div class="penalty-title">⚠ PENALTY WARNING</div>
+              <div class="penalty-desc">Missing this quest: -75 XP, Strength Decay -1 STR, Streak Reset</div>
+            </div>
+
+            <div class="notif-actions">
+              <button class="btn-glow-blue">I'M READY ⚡</button>
+              <button class="btn-decline">SNOOZE (15 MIN)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label">05 — SYSTEM ALARM</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         SCREEN 6: PENALTY / DEBUFF SCREEN
+         ═══════════════════════════════════════════ -->
+    <div class="phone-wrapper">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen scanlines" style="scrollbar-width:none;">
+          <div class="screen-penalty scanlines">
+            <div class="penalty-skull">💀</div>
+
+            <div class="penalty-system">[SYSTEM PENALTY]</div>
+
+            <div class="penalty-headline">QUEST FAILED</div>
+
+            <div class="debuff-list">
+              <div class="debuff-item">
+                <span class="debuff-name">Strength Decay</span>
+                <span class="debuff-value">-2 STR</span>
+              </div>
+              <div class="debuff-item">
+                <span class="debuff-name">Streak Broken</span>
+                <span class="debuff-value">-12 DAYS</span>
+              </div>
+              <div class="debuff-item">
+                <span class="debuff-name">XP Penalty</span>
+                <span class="debuff-value">-150 XP</span>
+              </div>
+              <div class="debuff-item">
+                <span class="debuff-name">Debuff Active</span>
+                <span class="debuff-value">WEAKENED ×24h</span>
+              </div>
+            </div>
+
+            <button class="btn-penalty">ACCEPT PENALTY &amp; CONTINUE</button>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label">06 — PENALTY SCREEN</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         SCREEN 7: REWARD CLAIM / QUEST COMPLETE
+         ═══════════════════════════════════════════ -->
+    <div class="phone-wrapper">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen scanlines" style="scrollbar-width:none;">
+          <div class="screen-reward">
+            <div class="reward-modal">
+              <div class="reward-sparkle">✦</div>
+
+              <div class="reward-system bracket-text">[QUEST COMPLETE]</div>
+
+              <div class="reward-title">30-Day Dungeon CLEARED</div>
+
+              <div class="reward-items">
+                <div class="reward-item">
+                  <div class="reward-item-icon">⚡</div>
+                  <div class="reward-item-text">Experience Gained</div>
+                  <div class="reward-item-value">+3,000 XP</div>
+                </div>
+                <div class="reward-item">
+                  <div class="reward-item-icon">💪</div>
+                  <div class="reward-item-text">Strength Bonus</div>
+                  <div class="reward-item-value">+10 STR</div>
+                </div>
+                <div class="reward-item">
+                  <div class="reward-item-icon">🏆</div>
+                  <div class="reward-item-text">Title Earned</div>
+                  <div class="reward-item-value">Iron Will</div>
+                </div>
+                <div class="reward-item">
+                  <div class="reward-item-icon">⬆</div>
+                  <div class="reward-item-text">Rank Up</div>
+                  <div class="reward-item-value">C→B Eligible</div>
+                </div>
+              </div>
+
+              <button class="btn-claim">CLAIM REWARDS ✦</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label">07 — REWARD CLAIM</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         SCREEN 8: DUNGEON ENTRY
+         ═══════════════════════════════════════════ -->
+    <div class="phone-wrapper">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen scanlines" style="scrollbar-width:none;">
+          <div class="screen-dungeon">
+            <div class="gate-portal">
+              <div class="gate-icon">🌀</div>
+            </div>
+
+            <div class="dungeon-tag bracket-text">DUNGEON GATE DETECTED</div>
+
+            <div class="dungeon-name">Iron Body Challenge</div>
+
+            <div class="dungeon-desc">
+              30 days of progressive overload. Push your physical limits daily. The System is watching.
+            </div>
+
+            <div class="rewards-preview">
+              <div class="reward-pill">+3,000 XP</div>
+              <div class="reward-pill">+10 STR</div>
+              <div class="reward-pill">TITLE</div>
+            </div>
+
+            <button class="btn-enter">ENTER DUNGEON</button>
+
+            <div class="dungeon-warning">
+              ⚠ Abandoning this dungeon mid-way will incur severe penalties.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label">08 — DUNGEON ENTRY</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         SCREEN 9: CHAIN QUEST ACTIVE
+         ═══════════════════════════════════════════ -->
+    <div class="phone-wrapper">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen scanlines" style="scrollbar-width:none;">
+          <div class="screen-chain">
+            <!-- Status Bar -->
+            <div class="status-bar">
+              <span class="time">6:15</span>
+              <span class="icons">
+                <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M1 7.5H2.5V9H1V7.5ZM4 6H5.5V9H4V6ZM7 4H8.5V9H7V4ZM10 2H11.5V9H10V2Z" fill="white" opacity="0.8"/><rect x="12" y="1" width="1.5" height="8" rx="0.5" fill="white" opacity="0.8"/></svg>
+                <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M6 1L1 5H3V9H9V5H11L6 1Z" fill="white" opacity="0.8"/></svg>
+                <div class="battery"><div class="battery-fill"></div></div>
+              </span>
+            </div>
+
+            <!-- Header -->
+            <div class="chain-header">
+              <div class="chain-title">CHAIN QUEST</div>
+              <div class="chain-subtitle">DAY 12 / 30</div>
+            </div>
+
+            <!-- Chain Visualization -->
+            <div class="chain-visual">
+              <!-- 30 nodes: 1-11 green, 12 gold, 13-30 gray -->
+              <div class="chain-node completed"></div>
+              <div class="chain-node completed"></div>
+              <div class="chain-node completed"></div>
+              <div class="chain-node completed"></div>
+              <div class="chain-node completed"></div>
+              <div class="chain-node completed"></div>
+              <div class="chain-node completed"></div>
+              <div class="chain-node completed"></div>
+              <div class="chain-node completed"></div>
+              <div class="chain-node completed"></div>
+              <div class="chain-node completed"></div>
+              <div class="chain-node current"></div>
+              <div class="chain-node"></div>
+              <div class="chain-node"></div>
+              <div class="chain-node"></div>
+              <div class="chain-node"></div>
+              <div class="chain-node"></div>
+              <div class="chain-node"></div>
+              <div class="chain-node"></div>
+              <div class="chain-node"></div>
+              <div class="chain-node"></div>
+              <div class="chain-node"></div>
+              <div class="chain-node"></div>
+              <div class="chain-node"></div>
+              <div class="chain-node"></div>
+              <div class="chain-node"></div>
+              <div class="chain-node"></div>
+              <div class="chain-node"></div>
+              <div class="chain-node"></div>
+              <div class="chain-node"></div>
+            </div>
+
+            <!-- Quest Card -->
+            <div class="chain-quest-card">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                <div class="chain-quest-name">Cold Shower Challenge</div>
+                <div class="difficulty-badge badge-a" style="margin-left:auto;">A</div>
+              </div>
+
+              <div style="font-size:12px; color:var(--system-silver); margin-bottom:12px;">2 Minutes minimum duration</div>
+
+              <div class="streak-info">🔥 Streak: 11 days &mdash; Continue the chain</div>
+
+              <div class="chain-rewards">
+                <div class="chain-reward-tag">+200 XP</div>
+                <div class="chain-reward-tag">+2 VIT</div>
+              </div>
+
+              <div class="chain-warning">
+                ⚠ Missing today breaks the chain back to Day 1. All progress will be lost.
+              </div>
+
+              <button class="btn-chain">COMPLETE CHAIN QUEST</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label">09 — CHAIN QUEST</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         SCREEN 10: SETTINGS / SYSTEM CONFIG
+         ═══════════════════════════════════════════ -->
+    <div class="phone-wrapper">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen scanlines" style="scrollbar-width:none;">
+          <div class="screen-settings">
+            <!-- Status Bar -->
+            <div class="status-bar">
+              <span class="time">9:41</span>
+              <span class="icons">
+                <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M1 7.5H2.5V9H1V7.5ZM4 6H5.5V9H4V6ZM7 4H8.5V9H7V4ZM10 2H11.5V9H10V2Z" fill="white" opacity="0.8"/><rect x="12" y="1" width="1.5" height="8" rx="0.5" fill="white" opacity="0.8"/></svg>
+                <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M6 1L1 5H3V9H9V5H11L6 1Z" fill="white" opacity="0.8"/></svg>
+                <div class="battery"><div class="battery-fill"></div></div>
+              </span>
+            </div>
+
+            <!-- Header -->
+            <div class="settings-header">
+              <div class="settings-title">SYSTEM CONFIG</div>
+            </div>
+
+            <!-- Notification Settings -->
+            <div class="settings-section">
+              <div class="settings-section-title">Notification Settings</div>
+
+              <div class="setting-item">
+                <div>
+                  <div class="setting-label">Quest Reminders</div>
+                  <div class="setting-desc">Alert before quest windows open</div>
+                </div>
+                <div class="toggle-switch on"><div class="knob"></div></div>
+              </div>
+
+              <div class="setting-item">
+                <div>
+                  <div class="setting-label">Penalty Warnings</div>
+                  <div class="setting-desc">Warn before penalties apply</div>
+                </div>
+                <div class="toggle-switch on"><div class="knob"></div></div>
+              </div>
+
+              <div class="setting-item">
+                <div>
+                  <div class="setting-label">Daily Summary</div>
+                  <div class="setting-desc">End-of-day progress report</div>
+                </div>
+                <div class="toggle-switch"><div class="knob"></div></div>
+              </div>
+
+              <div class="setting-item">
+                <div>
+                  <div class="setting-label">Sound Effects</div>
+                  <div class="setting-desc">System audio cues</div>
+                </div>
+                <div class="toggle-switch on"><div class="knob"></div></div>
+              </div>
+            </div>
+
+            <!-- Account -->
+            <div class="settings-section">
+              <div class="settings-section-title">Account</div>
+
+              <div class="setting-item">
+                <div>
+                  <div class="setting-label">Hunter ID</div>
+                  <div class="setting-desc">JINWOO_00 &mdash; C-Rank</div>
+                </div>
+                <span style="color:var(--muted-ash); font-size:11px;">#SL-4721</span>
+              </div>
+
+              <div class="setting-item">
+                <div>
+                  <div class="setting-label">Export Data</div>
+                  <div class="setting-desc">Download quest history</div>
+                </div>
+                <span style="color:var(--holo-cyan); font-size:11px;">➜</span>
+              </div>
+            </div>
+
+            <!-- Integrations -->
+            <div class="settings-section">
+              <div class="settings-section-title">Integrations</div>
+
+              <div class="integration-card">
+                <div class="integration-icon">❤</div>
+                <div>
+                  <div class="integration-name">Health Connect</div>
+                  <div class="integration-status">● Connected</div>
+                </div>
+              </div>
+
+              <div class="integration-card">
+                <div class="integration-icon">📅</div>
+                <div>
+                  <div class="integration-name">Calendar</div>
+                  <div class="integration-status">● Connected</div>
+                </div>
+              </div>
+
+              <div class="integration-card">
+                <div class="integration-icon">📊</div>
+                <div>
+                  <div class="integration-name">Lyfta Analytics</div>
+                  <div style="font-size:10px; color:var(--muted-ash); font-family:'Share Tech Mono',monospace;">○ Not connected</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="danger-zone">
+              <div class="danger-title">⚠ DANGER ZONE</div>
+              <button class="danger-btn">RESET CHARACTER</button>
+              <button class="danger-btn" style="margin-bottom:0;">DELETE ACCOUNT</button>
+            </div>
+
+            <div class="version">ARISE v2.4.1-beta</div>
+
+            <!-- Bottom Nav -->
+            <div class="bottom-nav">
+              <div class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                <span>HOME</span>
+              </div>
+              <div class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                <span>QUESTS</span>
+              </div>
+              <div class="nav-center">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <div class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <span>HUNTER</span>
+              </div>
+              <div class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                <span>MORE</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label">10 — SYSTEM CONFIG</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         SCREEN 11: ONBOARDING — THE PACT
+         ═══════════════════════════════════════════ -->
+    <div class="phone-wrapper">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen scanlines" style="scrollbar-width:none;">
+          <div class="screen-pact">
+            <div class="pact-title">THE PACT</div>
+
+            <div class="pact-divider"></div>
+
+            <div class="pact-warning">
+              Before you proceed, understand: the System does not tolerate Players who accept its power without accepting its rules.
+            </div>
+
+            <div class="pact-laws">
+              <div class="pact-law">
+                <span class="pact-law-number">I.</span>
+                <span>The Player shall not ignore quests without accepting the penalty.</span>
+              </div>
+              <div class="pact-law">
+                <span class="pact-law-number">II.</span>
+                <span>The Player acknowledges that strength must be earned through action.</span>
+              </div>
+              <div class="pact-law">
+                <span class="pact-law-number">III.</span>
+                <span>The System is not a game. It is a binding contract with yourself.</span>
+              </div>
+            </div>
+
+            <div class="pact-actions">
+              <button class="btn-pact-accept">I accept the Pact. I will not break it.</button>
+              <button class="btn-pact-decline">I am not ready.</button>
+            </div>
+
+            <div class="pact-signature">
+              <div class="pact-signature-label">Kinetic Signature &mdash; Draw your mark to bind the Pact</div>
+              <div style="margin-top:12px; height:40px; border-bottom:1px solid rgba(0,229,255,0.15); position:relative;">
+                <div style="position:absolute; bottom:0; left:0; width:30px; height:30px; border-radius:50%; background:rgba(0,229,255,0.05); border:1px solid rgba(0,229,255,0.1);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label">11 — THE PACT</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         SCREEN 12: LEADERBOARD / GUILD
+         ═══════════════════════════════════════════ -->
+    <div class="phone-wrapper">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen scanlines" style="scrollbar-width:none;">
+          <div class="screen-leaderboard">
+            <!-- Status Bar -->
+            <div class="status-bar">
+              <span class="time">9:41</span>
+              <span class="icons">
+                <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M1 7.5H2.5V9H1V7.5ZM4 6H5.5V9H4V6ZM7 4H8.5V9H7V4ZM10 2H11.5V9H10V2Z" fill="white" opacity="0.8"/><rect x="12" y="1" width="1.5" height="8" rx="0.5" fill="white" opacity="0.8"/></svg>
+                <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M6 1L1 5H3V9H9V5H11L6 1Z" fill="white" opacity="0.8"/></svg>
+                <div class="battery"><div class="battery-fill"></div></div>
+              </span>
+            </div>
+
+            <!-- Header -->
+            <div class="lb-header">
+              <div style="font-family:'Orbitron',monospace; font-size:16px; font-weight:700; color:var(--pure-white); letter-spacing:2px;">LEADERBOARD</div>
+              <div style="font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--muted-ash); margin-top:4px;">Global Rankings &mdash; Updated Hourly</div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="lb-tabs">
+              <div class="lb-tab active">GLOBAL</div>
+              <div class="lb-tab">GUILD</div>
+              <div class="lb-tab">FRIENDS</div>
+            </div>
+
+            <!-- List -->
+            <div class="lb-list">
+              <!-- Top 3 -->
+              <div class="lb-row">
+                <div class="lb-rank gold">1</div>
+                <div class="lb-user">
+                  <div class="lb-username">★ ANONYMOUS_001</div>
+                </div>
+                <div class="lb-rank-badge" style="background:linear-gradient(135deg,var(--arise-gold),#FFA000); color:var(--black);">S</div>
+                <div class="lb-level">Lv.87</div>
+              </div>
+
+              <div class="lb-row">
+                <div class="lb-rank silver">2</div>
+                <div class="lb-user">
+                  <div class="lb-username">ANONYMOUS_042</div>
+                </div>
+                <div class="lb-rank-badge" style="background:linear-gradient(135deg,#C0C0C0,#808080); color:var(--black);">A</div>
+                <div class="lb-level">Lv.74</div>
+              </div>
+
+              <div class="lb-row">
+                <div class="lb-rank bronze">3</div>
+                <div class="lb-user">
+                  <div class="lb-username">ANONYMOUS_118</div>
+                </div>
+                <div class="lb-rank-badge" style="background:linear-gradient(135deg,#CD7F32,#8B4513); color:var(--pure-white);">A</div>
+                <div class="lb-level">Lv.71</div>
+              </div>
+
+              <div class="lb-row">
+                <div class="lb-rank">4</div>
+                <div class="lb-user">
+                  <div class="lb-username">ANONYMOUS_203</div>
+                </div>
+                <div class="lb-rank-badge" style="background:var(--system-blue); color:var(--pure-white);">B</div>
+                <div class="lb-level">Lv.65</div>
+              </div>
+
+              <div class="lb-row">
+                <div class="lb-rank">5</div>
+                <div class="lb-user">
+                  <div class="lb-username">ANONYMOUS_289</div>
+                </div>
+                <div class="lb-rank-badge" style="background:var(--system-blue); color:var(--pure-white);">B</div>
+                <div class="lb-level">Lv.61</div>
+              </div>
+
+              <div class="lb-row">
+                <div class="lb-rank">6</div>
+                <div class="lb-user">
+                  <div class="lb-username">ANONYMOUS_345</div>
+                </div>
+                <div class="lb-rank-badge" style="background:var(--system-blue); color:var(--pure-white);">B</div>
+                <div class="lb-level">Lv.58</div>
+              </div>
+
+              <div class="lb-row">
+                <div class="lb-rank">7</div>
+                <div class="lb-user">
+                  <div class="lb-username">ANONYMOUS_412</div>
+                </div>
+                <div class="lb-rank-badge" style="background:#9C27B0; color:var(--pure-white);">C</div>
+                <div class="lb-level">Lv.52</div>
+              </div>
+
+              <!-- Spacer with dots -->
+              <div style="text-align:center; padding:4px 0;">
+                <span style="color:var(--muted-ash); font-size:10px; letter-spacing:4px;">•••</span>
+              </div>
+
+              <!-- Current User -->
+              <div class="lb-row you">
+                <div class="lb-rank" style="color:var(--holo-cyan);">247</div>
+                <div class="lb-user">
+                  <div class="lb-username" style="color:var(--holo-cyan); font-weight:600;">YOU — JINWOO_00</div>
+                </div>
+                <div class="lb-rank-badge" style="background:var(--system-blue); color:var(--pure-white);">C</div>
+                <div class="lb-level" style="color:var(--holo-cyan);">Lv.24</div>
+              </div>
+            </div>
+
+            <!-- CTA -->
+            <div class="lb-cta">Join a Guild +</div>
+
+            <!-- Bottom Nav -->
+            <div class="bottom-nav">
+              <div class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                <span>HOME</span>
+              </div>
+              <div class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                <span>QUESTS</span>
+              </div>
+              <div class="nav-center">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <div class="nav-item">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <span>HUNTER</span>
+              </div>
+              <div class="nav-item active">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+                <span>RANK</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label">12 — LEADERBOARD</div>
+    </div>
+
+  </div><!-- /phone-grid -->
+
+  <!-- ═══════════════════════════════════════════
+       PAGE FOOTER
+       ═══════════════════════════════════════════ -->
+  <div class="page-footer">
+    &copy; 2026 ARISE Project — Research-Backed Design System<br>
+    <span style="opacity:0.6;">Solo Leveling UI Research &mdash; All visual elements derived from manhwa analysis</span>
+  </div>
+
+</body>
+</html>
