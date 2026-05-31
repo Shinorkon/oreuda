@@ -50,8 +50,8 @@ jobs:
             export DB_PASSWORD
             export SECRET_KEY
             
-            # Stop and remove volume to ensure fresh start with correct password
-            docker compose down -v
+            # Stop services (keep volume for data persistence)
+            docker compose down
             docker compose up -d --build
             sleep 10
             docker compose exec -T backend alembic upgrade head || true
