@@ -11,6 +11,10 @@ class Quest {
   final String category;
   final String? deadline;
   final String createdAt;
+  // Dynamic quest fields
+  final int? targetValue;
+  final int currentValue;
+  final String? metricType;
 
   Quest({
     required this.id,
@@ -25,6 +29,9 @@ class Quest {
     required this.category,
     this.deadline,
     required this.createdAt,
+    this.targetValue,
+    this.currentValue = 0,
+    this.metricType,
   });
 
   factory Quest.fromJson(Map<String, dynamic> json) {
@@ -41,6 +48,17 @@ class Quest {
       category: json['category'],
       deadline: json['deadline'],
       createdAt: json['created_at'],
+      targetValue: json['target_value'],
+      currentValue: json['current_value'] ?? 0,
+      metricType: json['metric_type'],
     );
   }
+
+  /// Progress percentage (0.0 to 1.0)
+  double get progress {
+    if (targetValue == null || targetValue == 0) return 0.0;
+    return (currentValue / targetValue!).clamp(0.0, 1.0);
+  }
+
+  bool get isCompleted => status == 'completed';
 }
