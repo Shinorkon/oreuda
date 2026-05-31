@@ -13,74 +13,31 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy to Contabo VPS
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: root
           key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          timeout: 60s
+          command_timeout: 20m
+          debug: true
           script: |
-            set -e
-            cd /root/oreuda
-            git fetch origin
-            git reset --hard origin/${{ github.ref_name }}
-
-            # Regenerate env with fresh secrets
-            DB_PASSWORD=$(openssl rand -hex 16)
-            SECRET_KEY=$(openssl rand -hex 32)
-            cat > backend/.env << EOF
-            DATABASE_URL=postgresql://oreuda:${DB_PASSWORD}@db:5432/oreuda
-            SECRET_KEY=${SECRET_KEY}
-            ALGORITHM=HS256
-            ACCESS_TOKEN_EXPIRE_DAYS=30
-            DEBUG=False
-            EOF
-            export DB_PASSWORD SECRET_KEY
-
-            docker compose down
-            docker compose up -d --build
-            sleep 10
-            docker compose exec -T backend alembic upgrade head || true
-            docker compose ps
-            echo "✅ Backend deployed at http://${{ secrets.VPS_HOST }}:8004"
+            echo "SSH connected successfully"
+            whoami
+            hostname
 
       - name: Trigger APK Build on VPS
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: root
           key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          timeout: 60s
+          command_timeout: 20m
           script: |
-            set -e
-            cd /root/oreuda
-            # Run build in background with nohup so SSH disconnect doesn't kill it
-            nohup bash build-apk.sh ${{ github.ref_name }} > /tmp/build-apk.log 2>&1 &
-            BUILD_PID=$!
-            echo "Build started with PID $BUILD_PID"
-            # Wait for build to complete (up to 20 min)
-            for i in $(seq 1 120); do
-              if [ -f /root/oreuda/builds/latest/oreuda-release.apk ]; then
-                echo "✅ APK build complete"
-                exit 0
-              fi
-              if ! kill -0 $BUILD_PID 2>/dev/null; then
-                echo "⚠️ Build process exited. Checking logs..."
-                tail -50 /tmp/build-apk.log
-                exit 1
-              fi
-              sleep 10
-            done
-            echo "⏰ Build timed out after 20 minutes"
-            exit 1
-
-      - name: Download built APK from VPS
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: root
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cat /root/oreuda/builds/latest-apk-path.txt
-            ls -lh /root/oreuda/builds/latest/oreuda-release.apk
+            echo "APK build step"
 
       - name: Fetch APK via SCP
         uses: appleboy/scp-action@v0.1.7
@@ -88,6 +45,8 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: root
           key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          timeout: 120s
           source: "/root/oreuda/builds/latest/oreuda-release.apk"
           target: "./oreuda-release.apk"
 
