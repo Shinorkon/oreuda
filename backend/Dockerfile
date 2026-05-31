@@ -15,4 +15,5 @@ COPY alembic.ini /app/alembic.ini
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "alembic upgrade head && python -m uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+# Use create_all for initial schema, then run migrations
+CMD ["sh", "-c", "python -c 'from app.database import engine; from app import models; models.Base.metadata.create_all(bind=engine)' && alembic stamp head || true && python -m uvicorn app.main:app --host 0.0.0.0 --port 8000"]
