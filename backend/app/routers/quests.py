@@ -4,6 +4,7 @@ from typing import Optional, List
 from app.database import get_db
 from app import models, schemas, crud
 from app.auth import get_current_active_user
+from app.quest_engine import QuestEngine
 
 router = APIRouter(prefix="/quests", tags=["quests"])
 
@@ -25,12 +26,35 @@ def create_quest(quest: schemas.QuestCreate, current_user: models.User = Depends
 
 @router.get("/daily", response_model=List[schemas.QuestOut])
 def get_daily_quests(current_user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
-    return crud.generate_daily_quests(db, current_user)
+    """Get or generate today's daily quests."""
+    # First, check for quest completions based on health data
+    QuestEngine.check_quest_completion(db, current_user)
+    # Then get or create daily quests
+    return QuestEngine.get_or_create_daily_quests(db, current_user)
 
 
 @router.post("/generate-daily", response_model=List[schemas.QuestOut])
 def generate_daily(current_user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
-    return crud.generate_daily_quests(db, current_user)
+    """Force regenerate daily quests."""
+    return QuestEngine.generate_daily_quests(db, current_user)
+
+
+@router.post("/check-completion")
+def check_quest_completion(current_user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    """Check all active quests against health data and auto-complete."""
+    completed = QuestEngine.check_quest_completion(db, current_user)
+    return {
+        "completed_count": len(completed),
+        "completed_quests": [
+            {
+                "id": q.id,
+                "title": q.title,
+                "xp_reward": q.xp_reward,
+                "gold_reward": q.gold_reward,
+            }
+            for q in completed
+        ],
+    }
 
 
 @router.post("/{quest_id}/complete", response_model=schemas.QuestCompleteResponse)

@@ -102,6 +102,10 @@ class QuestOut(QuestBase):
     chain_day: Optional[int] = None
     chain_total_days: Optional[int] = None
     dungeon_floor: Optional[int] = None
+    # Dynamic quest fields
+    target_value: Optional[int] = None
+    current_value: int = 0
+    metric_type: Optional[str] = None
 
     class Config:
         from_attributes = True
