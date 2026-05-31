@@ -5,8 +5,8 @@ on:
     branches: [main, staging]
 
 jobs:
-  deploy:
-    name: Deploy Backend & Build APK
+  deploy-backend:
+    name: Deploy Backend
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -27,11 +27,9 @@ jobs:
             git fetch origin
             git reset --hard origin/main
             
-            # Generate secrets and export for docker-compose
             export DB_PASSWORD=$(openssl rand -hex 16)
             export SECRET_KEY=$(openssl rand -hex 32)
             
-            # Write backend .env
             cat > backend/.env << ENV_EOF
             DATABASE_URL=postgresql://oreuda:${DB_PASSWORD}@db:5432/oreuda
             SECRET_KEY=${SECRET_KEY}
@@ -40,7 +38,6 @@ jobs:
             DEBUG=False
             ENV_EOF
             
-            # Deploy with exported DB_PASSWORD so postgres gets the same password
             docker compose down
             docker compose up -d --build
             sleep 10
@@ -48,7 +45,12 @@ jobs:
             docker compose ps
             echo "✅ Backend deployed at http://${{ secrets.VPS_HOST }}:8004"
 
-      - name: Trigger APK Build on VPS
+  build-apk:
+    name: Build APK on VPS
+    runs-on: ubuntu-latest
+    needs: deploy-backend
+    steps:
+      - name: Build APK on VPS
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -56,40 +58,12 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
           timeout: 60s
-          command_timeout: 20m
+          command_timeout: 25m
           script: |
             set -e
             cd /root/oreuda
-            nohup bash build-apk.sh main > /tmp/build-apk.log 2>&1 &
-            BUILD_PID=$!
-            echo "Build started with PID $BUILD_PID"
-            for i in $(seq 1 120); do
-              if [ -f /root/oreuda/builds/latest/oreuda-release.apk ]; then
-                echo "✅ APK build complete"
-                exit 0
-              fi
-              if ! kill -0 $BUILD_PID 2>/dev/null; then
-                echo "⚠️ Build process exited. Checking logs..."
-                tail -50 /tmp/build-apk.log
-                exit 1
-              fi
-              sleep 10
-            done
-            echo "⏰ Build timed out after 20 minutes"
-            exit 1
-
-      - name: Download built APK from VPS
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: root
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: 22
-          timeout: 60s
-          command_timeout: 5m
-          script: |
-            cat /root/oreuda/builds/latest-apk-path.txt
-            ls -lh /root/oreuda/builds/latest/oreuda-release.apk
+            bash build-apk.sh main
+            echo "✅ APK built successfully"
 
       - name: Fetch APK via SCP
         uses: appleboy/scp-action@v0.1.7
