@@ -22,6 +22,7 @@ android {
         versionName = flutter.versionName
         // Target ARM64 (most modern Android devices)
         ndk {
+            abiFilters.clear()
             abiFilters += listOf("arm64-v8a")
         }
     }
