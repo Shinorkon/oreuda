@@ -53,3 +53,9 @@ backend/.env
 
 # Misc
 *.zip
+
+# CI/CD build outputs
+builds/
+
+# Auto-generated build config (overwritten by CI)
+frontend/lib/config.dart
