@@ -65,35 +65,16 @@ jobs:
             bash build-apk.sh main
             echo "✅ APK built successfully"
 
-      - name: Download APK from VPS
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: root
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: 22
-          timeout: 60s
-          command_timeout: 5m
-          script: |
-            cat /root/oreuda/builds/latest-apk-path.txt
-            ls -lh /root/oreuda/builds/latest/oreuda-release.apk
-
-      - name: Copy APK to workspace
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: root
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: 22
-          timeout: 60s
-          command_timeout: 5m
-          script: |
-            cat /root/oreuda/builds/latest/oreuda-release.apk | base64
-
-      - name: Decode and save APK
+      - name: Setup SSH for SCP
         run: |
-          mkdir -p ./apk
-          echo "${{ steps.copy-apk.outputs.stdout }}" | base64 -d > ./oreuda-release.apk
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Download APK via SCP
+        run: |
+          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no root@${{ secrets.VPS_HOST }}:/root/oreuda/builds/latest/oreuda-release.apk ./oreuda-release.apk
           ls -lh ./oreuda-release.apk
 
       - name: Upload APK to GitHub Artifacts
