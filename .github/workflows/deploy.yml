@@ -34,10 +34,8 @@ jobs:
             else
               DB_PASSWORD=$(openssl rand -hex 16)
               SECRET_KEY=$(openssl rand -hex 32)
-              cat > "$ENV_FILE" << ENV_EOF
-            DB_PASSWORD=${DB_PASSWORD}
-            SECRET_KEY=${SECRET_KEY}
-            ENV_EOF
+              echo "DB_PASSWORD=${DB_PASSWORD}" > "$ENV_FILE"
+              echo "SECRET_KEY=${SECRET_KEY}" >> "$ENV_FILE"
             fi
             
             cat > backend/.env << EOF
@@ -48,10 +46,12 @@ jobs:
             DEBUG=False
             EOF
             
+            # Export for docker-compose
             export DB_PASSWORD
             export SECRET_KEY
             
-            docker compose down
+            # Stop and remove volume to ensure fresh start with correct password
+            docker compose down -v
             docker compose up -d --build
             sleep 10
             docker compose exec -T backend alembic upgrade head || true
