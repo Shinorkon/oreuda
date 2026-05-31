@@ -72,7 +72,7 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Download APK via SCP
+      - name: Download APK to repo root
         run: |
           scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no root@${{ secrets.VPS_HOST }}:/root/oreuda/builds/latest/oreuda-release.apk ./oreuda-release.apk
           ls -lh ./oreuda-release.apk
