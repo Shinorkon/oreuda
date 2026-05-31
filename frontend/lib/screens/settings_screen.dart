@@ -1,10 +1,37 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../services/auth_service.dart';
+import '../services/settings_service.dart';
 import 'auth_screen.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  final SettingsService _settings = SettingsService.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _settings.addListener(_onSettingsChanged);
+    if (!_settings.isLoaded) {
+      _settings.load();
+    }
+  }
+
+  @override
+  void dispose() {
+    _settings.removeListener(_onSettingsChanged);
+    super.dispose();
+  }
+
+  void _onSettingsChanged() {
+    if (mounted) setState(() {});
+  }
 
   Future<void> _logout(BuildContext context) async {
     await AuthService.clearToken();
@@ -37,9 +64,24 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             _buildSectionTitle('NOTIFICATIONS'),
-            _buildToggleItem('Morning Briefing', 'Daily quest summary at wake time', true),
-            _buildToggleItem('Quest Warnings', 'Deadline reminders', true),
-            _buildToggleItem('Streak Alerts', 'Streak at-risk notifications', true),
+            _buildToggleItem(
+              'Morning Briefing',
+              'Daily quest summary at wake time',
+              _settings.morningBriefing,
+              (v) => _settings.setMorningBriefing(v),
+            ),
+            _buildToggleItem(
+              'Quest Warnings',
+              'Deadline reminders',
+              _settings.questWarnings,
+              (v) => _settings.setQuestWarnings(v),
+            ),
+            _buildToggleItem(
+              'Streak Alerts',
+              'Streak at-risk notifications',
+              _settings.streakAlerts,
+              (v) => _settings.setStreakAlerts(v),
+            ),
 
             const SizedBox(height: 16),
 
@@ -47,22 +89,39 @@ class SettingsScreen extends StatelessWidget {
             _buildIntegrationCard(
               Icons.favorite,
               'Health Connect',
-              'Connected',
-              AppColors.successGreen,
+              _settings.healthConnectEnabled ? 'Connected' : 'Not connected',
+              _settings.healthConnectEnabled ? AppColors.successGreen : AppColors.mutedAsh,
+              onTap: () => _settings.setHealthConnectEnabled(!_settings.healthConnectEnabled),
             ),
             _buildIntegrationCard(
-              Icons.timer,
-              'Screentime Monitor',
-              'Active',
-              AppColors.successGreen,
+              Icons.fitness_center,
+              'Lyfta',
+              _settings.lyftaConnected ? 'Connected' : 'Not connected',
+              _settings.lyftaConnected ? AppColors.successGreen : AppColors.mutedAsh,
+              onTap: () => _settings.setLyftaConnected(!_settings.lyftaConnected),
             ),
 
             const SizedBox(height: 16),
 
             _buildSectionTitle('DISPLAY'),
-            _buildToggleItem('High Contrast Mode', 'Enhanced accessibility', false),
-            _buildToggleItem('Reduced Motion', 'Disable animations', false),
-            _buildToggleItem('Haptic Feedback', 'Vibration on actions', true),
+            _buildToggleItem(
+              'High Contrast Mode',
+              'Enhanced accessibility',
+              _settings.highContrast,
+              (v) => _settings.setHighContrast(v),
+            ),
+            _buildToggleItem(
+              'Reduced Motion',
+              'Disable animations',
+              _settings.reducedMotion,
+              (v) => _settings.setReducedMotion(v),
+            ),
+            _buildToggleItem(
+              'Haptic Feedback',
+              'Vibration on actions',
+              _settings.hapticFeedback,
+              (v) => _settings.setHapticFeedback(v),
+            ),
 
             const SizedBox(height: 24),
 
@@ -128,100 +187,110 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildToggleItem(String title, String subtitle, bool initialValue) {
-    return StatefulBuilder(
-      builder: (context, setState) {
-        return Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(color: Colors.white.withAlpha((0.04 * 255).round())),
-            ),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: AppColors.pureWhite,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: AppColors.mutedAsh,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Switch(
-                value: initialValue,
-                onChanged: (v) {},
-                activeThumbColor: AppColors.holoCyan,
-                activeTrackColor: AppColors.holoCyan.withAlpha((0.3 * 255).round()),
-                inactiveTrackColor: AppColors.mutedAsh.withAlpha((0.3 * 255).round()),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildIntegrationCard(IconData icon, String name, String status, Color statusColor) {
+  Widget _buildToggleItem(
+    String title,
+    String subtitle,
+    bool value,
+    ValueChanged<bool> onChanged,
+  ) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.slateSurface,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white.withAlpha((0.04 * 255).round())),
+        border: Border(
+          bottom: BorderSide(color: Colors.white.withAlpha((0.04 * 255).round())),
+        ),
       ),
       child: Row(
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColors.holoCyan.withAlpha((0.1 * 255).round()),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: AppColors.holoCyan, size: 20),
-          ),
-          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  name,
+                  title,
                   style: const TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w600,
                     color: AppColors.pureWhite,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  status,
-                  style: TextStyle(
+                  subtitle,
+                  style: const TextStyle(
                     fontSize: 11,
-                    color: statusColor,
+                    color: AppColors.mutedAsh,
                   ),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right, color: AppColors.mutedAsh, size: 20),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeThumbColor: AppColors.holoCyan,
+            activeTrackColor: AppColors.holoCyan.withAlpha((0.3 * 255).round()),
+            inactiveTrackColor: AppColors.mutedAsh.withAlpha((0.3 * 255).round()),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildIntegrationCard(
+    IconData icon,
+    String name,
+    String status,
+    Color statusColor, {
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.slateSurface,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white.withAlpha((0.04 * 255).round())),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.holoCyan.withAlpha((0.1 * 255).round()),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: AppColors.holoCyan, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.pureWhite,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    status,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: statusColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: AppColors.mutedAsh, size: 20),
+          ],
+        ),
       ),
     );
   }

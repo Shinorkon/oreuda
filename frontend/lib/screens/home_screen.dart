@@ -78,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'ARISE',
+                        'OREUDA',
                         style: GoogleFonts.orbitron(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,

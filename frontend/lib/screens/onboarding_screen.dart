@@ -25,7 +25,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   ];
 
   bool _showRank = false;
-  bool _showArise = false;
+  bool _showOreuda = false;
   bool _showButton = false;
 
   @override
@@ -70,7 +70,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     _scaleController.forward();
 
     await Future.delayed(const Duration(seconds: 1));
-    if (mounted) setState(() => _showArise = true);
+    if (mounted) setState(() => _showOreuda = true);
 
     await Future.delayed(const Duration(seconds: 1));
     if (mounted) setState(() => _showButton = true);
@@ -194,15 +194,15 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
                 const SizedBox(height: 20),
 
-                // ARISE text
+                // OREUDA text
                 AnimatedOpacity(
-                  opacity: _showArise ? 1 : 0,
+                  opacity: _showOreuda ? 1 : 0,
                   duration: const Duration(milliseconds: 800),
                   child: AnimatedBuilder(
                     animation: _glowController,
                     builder: (context, child) {
                       return Text(
-                        'ARISE',
+                        'OREUDA',
                         style: TextStyle(
                           fontSize: 48,
                           fontWeight: FontWeight.w900,
