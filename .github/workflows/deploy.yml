@@ -27,9 +27,11 @@ jobs:
             git fetch origin
             git reset --hard origin/main
             
-            export DB_PASSWORD=$(openssl rand -hex 16)
-            export SECRET_KEY=$(openssl rand -hex 32)
+            # Generate secrets
+            DB_PASSWORD=$(openssl rand -hex 16)
+            SECRET_KEY=$(openssl rand -hex 32)
             
+            # Write backend .env
             cat > backend/.env << ENV_EOF
             DATABASE_URL=postgresql://oreuda:${DB_PASSWORD}@db:5432/oreuda
             SECRET_KEY=${SECRET_KEY}
@@ -37,6 +39,10 @@ jobs:
             ACCESS_TOKEN_EXPIRE_DAYS=30
             DEBUG=False
             ENV_EOF
+            
+            # Export for docker-compose so postgres gets same password
+            export DB_PASSWORD
+            export SECRET_KEY
             
             docker compose down
             docker compose up -d --build
