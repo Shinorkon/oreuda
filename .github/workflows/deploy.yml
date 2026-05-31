@@ -1,4 +1,4 @@
-name: 🚀 Oreuda Deploy + Build APK
+name: 🚀 Oreuda Deploy
 
 on:
   push:
@@ -27,11 +27,9 @@ jobs:
             git fetch origin
             git reset --hard origin/main
             
-            # Generate secrets
-            DB_PASSWORD=$(openssl rand -hex 16)
-            SECRET_KEY=$(openssl rand -hex 32)
+            export DB_PASSWORD=$(openssl rand -hex 16)
+            export SECRET_KEY=$(openssl rand -hex 32)
             
-            # Write backend .env
             cat > backend/.env << ENV_EOF
             DATABASE_URL=postgresql://oreuda:${DB_PASSWORD}@db:5432/oreuda
             SECRET_KEY=${SECRET_KEY}
@@ -40,52 +38,9 @@ jobs:
             DEBUG=False
             ENV_EOF
             
-            # Export for docker-compose so postgres gets same password
-            export DB_PASSWORD
-            export SECRET_KEY
-            
             docker compose down
             docker compose up -d --build
             sleep 10
             docker compose exec -T backend alembic upgrade head || true
             docker compose ps
             echo "✅ Backend deployed at http://${{ secrets.VPS_HOST }}:8004"
-
-  build-apk:
-    name: Build APK on VPS
-    runs-on: ubuntu-latest
-    needs: deploy-backend
-    steps:
-      - name: Build APK on VPS
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: root
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: 22
-          timeout: 60s
-          command_timeout: 25m
-          script: |
-            set -e
-            cd /root/oreuda
-            bash build-apk.sh main
-            echo "✅ APK built successfully"
-
-      - name: Setup SSH for SCP
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
-
-      - name: Download APK to repo root
-        run: |
-          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no root@${{ secrets.VPS_HOST }}:/root/oreuda/builds/latest/oreuda-release.apk ./oreuda-release.apk
-          ls -lh ./oreuda-release.apk
-
-      - name: Upload APK to GitHub Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: oreuda-apk-${{ github.ref_name }}-${{ github.run_number }}
-          path: "./oreuda-release.apk"
-          retention-days: 30
