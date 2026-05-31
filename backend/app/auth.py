@@ -13,7 +13,8 @@ SECRET_KEY = "oreuda-solo-leveling-secret-key-change-in-production"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 30
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__truncate_error=False)
+# Use argon2 instead of bcrypt to avoid 72-byte password limit
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/users/login")
 
 
