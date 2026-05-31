@@ -1,5 +1,5 @@
 import datetime
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Text, JSON
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Text, JSON, Date
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -30,6 +30,8 @@ class User(Base):
     guild_memberships = relationship("GuildMember", back_populates="user")
     dungeon_runs = relationship("DungeonRun", back_populates="user")
     screentime_settings = relationship("ScreentimeSetting", back_populates="user", uselist=False)
+    health_snapshots = relationship("HealthSnapshot", back_populates="user", order_by="HealthSnapshot.date.desc()")
+    lyfta_integration = relationship("LyftaIntegration", back_populates="user", uselist=False)
 
 
 class PlayerStats(Base):
@@ -70,6 +72,10 @@ class Quest(Base):
     chain_day = Column(Integer, nullable=True)
     chain_total_days = Column(Integer, nullable=True)
     dungeon_floor = Column(Integer, nullable=True)
+    # Dynamic quest fields
+    target_value = Column(Integer, nullable=True)  # e.g., 10000 steps
+    current_value = Column(Integer, default=0)  # e.g., 7234 steps
+    metric_type = Column(String, nullable=True)  # steps/calories/sleep/workouts/weight
 
     user = relationship("User", back_populates="quests")
 
@@ -189,3 +195,49 @@ class StoreItem(Base):
     stat_bonuses = Column(JSON, default=dict)
     effect = Column(String, default="")
     stock = Column(Integer, nullable=True)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# NEW: Health & Lyfta Integration Models
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class HealthSnapshot(Base):
+    """Daily aggregated health data from Health Connect."""
+    __tablename__ = "health_snapshots"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    date = Column(Date, nullable=False, index=True)
+    steps = Column(Integer, default=0)
+    calories_burned = Column(Integer, default=0)
+    sleep_minutes = Column(Integer, default=0)
+    resting_hr = Column(Integer, nullable=True)
+    workouts_count = Column(Integer, default=0)
+    workout_volume_kg = Column(Float, default=0.0)
+    weight_kg = Column(Float, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+
+    user = relationship("User", back_populates="health_snapshots")
+
+    __table_args__ = (
+        # One snapshot per user per day
+        {"sqlite_autoincrement": True},
+    )
+
+
+class LyftaIntegration(Base):
+    """Lyfta gym workout tracker integration."""
+    __tablename__ = "lyfta_integrations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    api_key_hash = Column(String(255), nullable=False)  # encrypted API key
+    is_active = Column(Boolean, default=True)
+    last_sync_at = Column(DateTime, nullable=True)
+    workouts_imported = Column(Integer, default=0)
+    exercises_imported = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+
+    user = relationship("User", back_populates="lyfta_integration")

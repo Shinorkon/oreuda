@@ -198,4 +198,22 @@ class ApiService {
     if (decoded is List) return decoded;
     throw Exception('Failed to load guilds');
   }
+
+  // Health
+  static Future<Map<String, dynamic>> syncHealth(Map<String, dynamic> data) async {
+    final res = await post('/health/sync', body: data);
+    return _decodeJson(res);
+  }
+
+  static Future<Map<String, dynamic>> getHealthStats() async {
+    final res = await get('/health/stats');
+    return _decodeJson(res);
+  }
+
+  static Future<List<dynamic>> getHealthTrend({int days = 7}) async {
+    final res = await get('/health/trend?days=$days');
+    final decoded = jsonDecode(res.body);
+    if (decoded is List) return decoded;
+    throw Exception('Failed to load health trend');
+  }
 }
