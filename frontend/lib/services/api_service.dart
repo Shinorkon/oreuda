@@ -32,7 +32,7 @@ class ApiService {
 
   static String get baseUrl {
     final port = BuildConfig.apiPort.isNotEmpty ? BuildConfig.apiPort : '8000';
-    return 'http://$_resolvedHost:$port/api/v1';
+    return 'http://$_resolvedHost:$port';
   }
 
   /// Quick check that the API is reachable (no auth required).
