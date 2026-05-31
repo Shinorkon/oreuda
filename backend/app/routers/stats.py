@@ -1,3 +1,4 @@
+import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
@@ -18,6 +19,9 @@ def get_stats(current_user: models.User = Depends(get_current_active_user), db: 
 
 @router.post("/decay")
 def apply_decay(current_user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    today = datetime.date.today()
+    if current_user.last_decay_date == today:
+        raise HTTPException(status_code=429, detail="Stat decay already applied today. Try again tomorrow.")
     decayed = crud.apply_stat_decay(db, current_user)
     return {
         "message": "Stat decay applied.",

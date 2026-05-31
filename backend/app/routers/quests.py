@@ -5,8 +5,11 @@ from app.database import get_db
 from app import models, schemas, crud
 from app.auth import get_current_active_user
 from app.quest_engine import QuestEngine
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 router = APIRouter(prefix="/quests", tags=["quests"])
+limiter = Limiter(key_func=get_remote_address)
 
 
 @router.get("/", response_model=List[schemas.QuestOut])
@@ -34,8 +37,9 @@ def get_daily_quests(current_user: models.User = Depends(get_current_active_user
 
 
 @router.post("/generate-daily", response_model=List[schemas.QuestOut])
+@limiter.limit("3/hour")
 def generate_daily(current_user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
-    """Force regenerate daily quests."""
+    """Force regenerate daily quests (rate limited to 3/hour)."""
     return QuestEngine.generate_daily_quests(db, current_user)
 
 

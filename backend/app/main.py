@@ -1,24 +1,49 @@
+import os
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
 from app.database import engine, Base
-from app import models
+from app import models, crud
 from app.routers import users, quests, stats, inventory, store, guilds, health, lyfta
 
-# Create tables
-Base.metadata.create_all(bind=engine)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: create tables (dev convenience) and seed store items
+    Base.metadata.create_all(bind=engine)
+    from app.database import SessionLocal
+    db = SessionLocal()
+    try:
+        crud.seed_store_items(db)
+    finally:
+        db.close()
+    yield
+    # Shutdown: nothing needed
+
+
+limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI(
     title="Oreuda API",
     description="Solo Leveling Life Gamification System",
     version="1.0.0",
+    lifespan=lifespan,
 )
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# CORS for Flutter frontend
+# CORS: restrict to actual frontend origins
+_cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:8004,http://10.0.2.2:8004").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[o.strip() for o in _cors_origins if o.strip()],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
     allow_headers=["*"],
 )
 

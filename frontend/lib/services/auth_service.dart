@@ -21,9 +21,29 @@ class AuthService {
     await prefs.remove(_userKey);
   }
 
+  /// Decode JWT payload and check if still valid.
+  static bool _isTokenValid(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) return false;
+      // Base64Url decode payload
+      var payload = parts[1];
+      // Add padding if needed
+      while (payload.length % 4 != 0) payload += '=';
+      final decoded = utf8.decode(base64Url.decode(payload));
+      final data = jsonDecode(decoded);
+      if (data['exp'] == null) return false;
+      final exp = data['exp'] as int;
+      return DateTime.now().millisecondsSinceEpoch ~/ 1000 < exp;
+    } catch (_) {
+      return false;
+    }
+  }
+
   static Future<bool> isLoggedIn() async {
     final token = await getToken();
-    return token != null && token.isNotEmpty;
+    if (token == null || token.isEmpty) return false;
+    return _isTokenValid(token);
   }
 
   static Future<void> saveUserData(Map<String, dynamic> userData) async {
@@ -48,5 +68,15 @@ class AuthService {
   static Future<void> setFirstLaunchComplete() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('first_launch', false);
+  }
+
+  /// Validate token before making API calls. Clears token and returns false if expired.
+  static Future<bool> ensureValidToken() async {
+    final token = await getToken();
+    if (token == null || token.isEmpty || !_isTokenValid(token)) {
+      await clearToken();
+      return false;
+    }
+    return true;
   }
 }

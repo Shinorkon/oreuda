@@ -166,6 +166,7 @@ def apply_stat_decay(db: Session, user: models.User) -> dict:
     stats.energy = int((stats.vit_stat + stats.agi_stat) / 2 * 10)
     stats.focus_stat = int((stats.int_stat + stats.sen_stat) / 2)
 
+    user.last_decay_date = datetime.date.today()
     db.commit()
     db.refresh(stats)
     return decayed
@@ -382,6 +383,7 @@ def get_inventory_item(db: Session, item_id: int, user_id: int) -> Optional[mode
 
 def add_item(db: Session, user_id: int, item_name: str, item_type: str, rarity: str, quantity: int = 1,
              stat_bonuses: dict = None, description: str = "") -> models.InventoryItem:
+    """Add an item to inventory. Caller must commit the transaction."""
     item = models.InventoryItem(
         user_id=user_id,
         item_name=item_name,
@@ -392,7 +394,7 @@ def add_item(db: Session, user_id: int, item_name: str, item_type: str, rarity: 
         description=description,
     )
     db.add(item)
-    db.commit()
+    db.flush()
     db.refresh(item)
     return item
 

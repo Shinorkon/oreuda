@@ -301,26 +301,8 @@ class QuestEngine:
                 quest.completed_at = datetime.utcnow()
                 quest.current_value = quest.target_value
 
-                # Award XP and gold
-                user.xp += quest.xp_reward
-                user.gold += quest.gold_reward
-
-                # Award stat bonuses
-                for stat, bonus in (quest.stat_rewards or {}).items():
-                    player_stats = crud.get_player_stats(db, user.id)
-                    if player_stats:
-                        current = getattr(player_stats, f"{stat}_stat", 10)
-                        setattr(player_stats, f"{stat}_stat", min(100, current + int(bonus)))
-
-                # Check level up
-                if crud.check_level_up(user):
-                    user.level += 1
-                    user.rank = crud.rank_for_level(user.level)
-                    # Grant distributable points on level up
-                    player_stats = crud.get_player_stats(db, user.id)
-                    if player_stats:
-                        player_stats.distributable_points += 3
-
+                # Use the unified completion logic for consistent rewards
+                crud.complete_quest(db, quest, user)
                 completed.append(quest)
             else:
                 # Update progress

@@ -1,5 +1,5 @@
 import datetime
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Text, JSON, Date
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Text, JSON, Date, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -20,6 +20,7 @@ class User(Base):
     streak_days = Column(Integer, default=0)
     best_streak = Column(Integer, default=0)
     last_quest_date = Column(DateTime, nullable=True)
+    last_decay_date = Column(Date, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     is_active = Column(Boolean, default=True)
 
@@ -222,7 +223,7 @@ class HealthSnapshot(Base):
 
     __table_args__ = (
         # One snapshot per user per day
-        {"sqlite_autoincrement": True},
+        UniqueConstraint("user_id", "date", name="uq_health_snapshot_user_date"),
     )
 
 

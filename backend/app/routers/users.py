@@ -1,14 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Form
+from fastapi import APIRouter, Depends, HTTPException, status, Form, Request
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models, schemas, crud
 from app.auth import create_access_token, verify_password, get_current_active_user
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 router = APIRouter(prefix="/users", tags=["users"])
+limiter = Limiter(key_func=get_remote_address)
 
 
 @router.post("/register", response_model=schemas.UserOut)
-def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def register(request: Request, user: schemas.UserCreate, db: Session = Depends(get_db)):
     if crud.get_user_by_email(db, user.email):
         raise HTTPException(status_code=400, detail="Email already registered")
     if crud.get_user_by_username(db, user.username):
@@ -17,7 +21,8 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=schemas.Token)
-def login(credentials: schemas.UserLogin, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def login(request: Request, credentials: schemas.UserLogin, db: Session = Depends(get_db)):
     user = crud.get_user_by_username(db, credentials.username)
     if not user or not verify_password(credentials.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -27,7 +32,9 @@ def login(credentials: schemas.UserLogin, db: Session = Depends(get_db)):
 
 # OAuth2-compatible endpoints for Flutter frontend
 @router.post("/auth/token", response_model=schemas.Token)
+@limiter.limit("10/minute")
 def auth_token(
+    request: Request,
     username: str = Form(...),
     password: str = Form(...),
     db: Session = Depends(get_db),
@@ -41,7 +48,8 @@ def auth_token(
 
 
 @router.post("/auth/register", response_model=schemas.UserOut)
-def auth_register(user: schemas.UserCreate, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def auth_register(request: Request, user: schemas.UserCreate, db: Session = Depends(get_db)):
     """Registration endpoint matching frontend's /auth/register path."""
     if crud.get_user_by_email(db, user.email):
         raise HTTPException(status_code=400, detail="Email already registered")

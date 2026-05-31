@@ -12,6 +12,8 @@ class ApiService {
           ? BuildConfig.baseUrl
           : 'http://10.0.2.2:8004';
 
+  static const _defaultTimeout = Duration(seconds: 10);
+
   static Future<Map<String, String>> get _headers async {
     final token = await AuthService.getToken();
     return {
@@ -24,9 +26,20 @@ class ApiService {
     final res = await http.get(
       Uri.parse('$baseUrl/users/me'),
       headers: await _headers,
-    );
+    ).timeout(_defaultTimeout);
     if (res.statusCode == 200) {
-      return jsonDecode(res.body);
+      final data = jsonDecode(res.body);
+      // /users/me returns nested FullProfile {user, stats, ...}
+      // Unwrap to flat map for backward compatibility
+      if (data is Map<String, dynamic> && data.containsKey('user')) {
+        final user = Map<String, dynamic>.from(data['user']);
+        user['stats'] = data['stats'];
+        user['titles'] = data['titles'];
+        user['inventory_count'] = data['inventory_count'];
+        user['guild_id'] = data['guild_id'];
+        return user;
+      }
+      return data;
     }
     throw Exception('Failed to get user: ${res.statusCode}');
   }
@@ -35,7 +48,7 @@ class ApiService {
     final res = await http.get(
       Uri.parse('$baseUrl/stats'),
       headers: await _headers,
-    );
+    ).timeout(_defaultTimeout);
     if (res.statusCode == 200) {
       return PlayerStats.fromJson(jsonDecode(res.body));
     }
@@ -56,8 +69,8 @@ class ApiService {
     final res = await http.post(
       Uri.parse('$baseUrl/users/auth/token'),
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: 'username=$username&password=$password',
-    );
+      body: 'username=${Uri.encodeQueryComponent(username)}&password=${Uri.encodeQueryComponent(password)}',
+    ).timeout(_defaultTimeout);
     final data = jsonDecode(res.body);
     if (res.statusCode == 200 && data.containsKey('access_token')) {
       await AuthService.saveToken(data['access_token']);
@@ -75,7 +88,7 @@ class ApiService {
         'username': username,
         'password': password,
       }),
-    );
+    ).timeout(_defaultTimeout);
     return jsonDecode(res.body);
   }
 
@@ -85,7 +98,7 @@ class ApiService {
     final res = await http.get(
       Uri.parse(url),
       headers: await _headers,
-    );
+    ).timeout(_defaultTimeout);
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
       return (data as List).map((q) => Quest.fromJson(q)).toList();
@@ -101,12 +114,11 @@ class ApiService {
     final res = await http.post(
       Uri.parse('$baseUrl/quests/check-completion'),
       headers: await _headers,
-    );
+    ).timeout(_defaultTimeout);
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
       return (data['completed_quests'] as List).map((q) => Quest.fromJson(q)).toList();
     }
-    // 404 means no quests to check, return empty
     if (res.statusCode == 404) return [];
     throw Exception('Failed to check quests: ${res.statusCode}');
   }
@@ -115,7 +127,7 @@ class ApiService {
     final res = await http.post(
       Uri.parse('$baseUrl/quests/$questId/complete'),
       headers: await _headers,
-    );
+    ).timeout(_defaultTimeout);
     if (res.statusCode != 200) {
       throw Exception('Failed to complete quest: ${res.statusCode}');
     }
@@ -134,7 +146,7 @@ class ApiService {
         'workouts_count': snapshot.workoutCount,
         'weight_kg': snapshot.weightKg,
       }),
-    );
+    ).timeout(_defaultTimeout);
     if (res.statusCode != 200) {
       throw Exception('Failed to sync health: ${res.statusCode} ${res.body}');
     }
@@ -144,7 +156,7 @@ class ApiService {
     final res = await http.get(
       Uri.parse('$baseUrl/stats/leaderboard'),
       headers: await _headers,
-    );
+    ).timeout(_defaultTimeout);
     if (res.statusCode == 200) {
       return jsonDecode(res.body);
     }
@@ -155,7 +167,7 @@ class ApiService {
     final res = await http.get(
       Uri.parse('$baseUrl/store/items'),
       headers: await _headers,
-    );
+    ).timeout(_defaultTimeout);
     if (res.statusCode == 200) {
       return jsonDecode(res.body);
     }
@@ -166,7 +178,7 @@ class ApiService {
     final res = await http.post(
       Uri.parse('$baseUrl/store/buy/$itemId'),
       headers: await _headers,
-    );
+    ).timeout(_defaultTimeout);
     if (res.statusCode != 200) {
       throw Exception('Failed to buy item: ${res.statusCode} ${res.body}');
     }
@@ -176,7 +188,7 @@ class ApiService {
     final res = await http.get(
       Uri.parse('$baseUrl/guilds/'),
       headers: await _headers,
-    );
+    ).timeout(_defaultTimeout);
     if (res.statusCode == 200) {
       return jsonDecode(res.body);
     }
@@ -187,7 +199,7 @@ class ApiService {
     final res = await http.get(
       Uri.parse('$baseUrl/inventory'),
       headers: await _headers,
-    );
+    ).timeout(_defaultTimeout);
     if (res.statusCode == 200) {
       return jsonDecode(res.body);
     }
@@ -198,7 +210,7 @@ class ApiService {
     final res = await http.post(
       Uri.parse('$baseUrl/inventory/use/$itemId'),
       headers: await _headers,
-    );
+    ).timeout(_defaultTimeout);
     if (res.statusCode != 200) {
       throw Exception('Failed to use item: ${res.statusCode} ${res.body}');
     }
@@ -208,7 +220,7 @@ class ApiService {
     final res = await http.post(
       Uri.parse('$baseUrl/inventory/equip/$itemId'),
       headers: await _headers,
-    );
+    ).timeout(_defaultTimeout);
     if (res.statusCode != 200) {
       throw Exception('Failed to equip item: ${res.statusCode} ${res.body}');
     }
@@ -218,7 +230,7 @@ class ApiService {
     final res = await http.post(
       Uri.parse('$baseUrl/guilds/$guildId/join'),
       headers: await _headers,
-    );
+    ).timeout(_defaultTimeout);
     if (res.statusCode != 200) {
       throw Exception('Failed to join guild: ${res.statusCode} ${res.body}');
     }
@@ -229,7 +241,7 @@ class ApiService {
       Uri.parse('$baseUrl/guilds/'),
       headers: await _headers,
       body: jsonEncode({'name': name, 'description': description}),
-    );
+    ).timeout(_defaultTimeout);
     if (res.statusCode != 200) {
       throw Exception('Failed to create guild: ${res.statusCode} ${res.body}');
     }
@@ -240,7 +252,7 @@ class ApiService {
       Uri.parse('$baseUrl/integrations/lyfta/connect'),
       headers: await _headers,
       body: jsonEncode({'api_key': apiKey}),
-    );
+    ).timeout(_defaultTimeout);
     if (res.statusCode != 200) {
       throw Exception('Failed to connect Lyfta: ${res.statusCode} ${res.body}');
     }
@@ -250,7 +262,7 @@ class ApiService {
     final res = await http.post(
       Uri.parse('$baseUrl/integrations/lyfta/sync'),
       headers: await _headers,
-    );
+    ).timeout(_defaultTimeout);
     if (res.statusCode != 200) {
       throw Exception('Failed to sync Lyfta: ${res.statusCode} ${res.body}');
     }

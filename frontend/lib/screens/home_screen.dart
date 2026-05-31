@@ -70,7 +70,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<HealthSnapshot?> _syncHealthData() async {
     try {
       final snapshot = await HealthConnectService.instance.fetchToday();
-      if (snapshot != null) {
+      // Only sync if Health Connect is actually authorized and has real data
+      if (snapshot != null && snapshot.authorized && snapshot.steps > 0) {
         await ApiService.syncHealth(snapshot);
         return snapshot;
       }
