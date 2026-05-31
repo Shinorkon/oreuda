@@ -39,14 +39,19 @@ class BottomNav extends StatelessWidget {
               label: 'QUESTS',
             ),
             BottomNavigationBarItem(
+              icon: Icon(Icons.store_outlined, size: 22),
+              activeIcon: Icon(Icons.store, size: 22),
+              label: 'STORE',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.group_outlined, size: 22),
+              activeIcon: Icon(Icons.group, size: 22),
+              label: 'GUILD',
+            ),
+            BottomNavigationBarItem(
               icon: Icon(Icons.person_outline, size: 22),
               activeIcon: Icon(Icons.person, size: 22),
               label: 'PROFILE',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings_outlined, size: 22),
-              activeIcon: Icon(Icons.settings, size: 22),
-              label: 'SYSTEM',
             ),
           ],
         ),

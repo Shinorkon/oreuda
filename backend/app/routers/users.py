@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Form
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models, schemas, crud
@@ -23,6 +23,31 @@ def login(credentials: schemas.UserLogin, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     token = create_access_token(data={"sub": user.username})
     return {"access_token": token, "token_type": "bearer"}
+
+
+# OAuth2-compatible endpoints for Flutter frontend
+@router.post("/auth/token", response_model=schemas.Token)
+def auth_token(
+    username: str = Form(...),
+    password: str = Form(...),
+    db: Session = Depends(get_db),
+):
+    """OAuth2 password flow endpoint for mobile clients."""
+    user = crud.get_user_by_username(db, username)
+    if not user or not verify_password(password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    token = create_access_token(data={"sub": user.username})
+    return {"access_token": token, "token_type": "bearer"}
+
+
+@router.post("/auth/register", response_model=schemas.UserOut)
+def auth_register(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    """Registration endpoint matching frontend's /auth/register path."""
+    if crud.get_user_by_email(db, user.email):
+        raise HTTPException(status_code=400, detail="Email already registered")
+    if crud.get_user_by_username(db, user.username):
+        raise HTTPException(status_code=400, detail="Username already taken")
+    return crud.create_user(db, user)
 
 
 @router.get("/me", response_model=schemas.FullProfile)

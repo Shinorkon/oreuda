@@ -27,16 +27,16 @@ jobs:
             git fetch origin
             git reset --hard origin/main
             
-            # Use persistent password file
+            # Use persistent password file — NEVER regenerate if it exists
             ENV_FILE="/root/.oreuda_env"
-            if [ -f "$ENV_FILE" ]; then
-              source "$ENV_FILE"
-            else
+            if [ ! -f "$ENV_FILE" ]; then
               DB_PASSWORD=$(openssl rand -hex 16)
               SECRET_KEY=$(openssl rand -hex 32)
               echo "DB_PASSWORD=${DB_PASSWORD}" > "$ENV_FILE"
               echo "SECRET_KEY=${SECRET_KEY}" >> "$ENV_FILE"
+              chmod 600 "$ENV_FILE"
             fi
+            source "$ENV_FILE"
             
             cat > backend/.env << EOF
             DATABASE_URL=postgresql://oreuda:${DB_PASSWORD}@db:5432/oreuda
@@ -46,13 +46,13 @@ jobs:
             DEBUG=False
             EOF
             
-            # Export for docker-compose
+            # Export for docker-compose environment substitution
             export DB_PASSWORD
             export SECRET_KEY
             
-            # Stop services (keep volume for data persistence)
-            docker compose down
-            docker compose up -d --build
+            # Clean up any stale containers, then restart backend (preserve DB)
+            docker compose rm -f backend 2>/dev/null || true
+            docker compose up -d --no-deps --build backend
             sleep 10
             docker compose exec -T backend alembic upgrade head || true
             docker compose ps

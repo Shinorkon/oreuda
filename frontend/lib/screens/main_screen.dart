@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'quest_board_screen.dart';
+import 'store_screen.dart';
+import 'guild_screen.dart';
 import 'profile_screen.dart';
-import 'settings_screen.dart';
 import '../widgets/bottom_nav.dart';
 
 class MainScreen extends StatefulWidget {
@@ -18,8 +19,9 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _screens = const [
     HomeScreen(),
     QuestBoardScreen(),
+    StoreScreen(),
+    GuildScreen(),
     ProfileScreen(),
-    SettingsScreen(),
   ];
 
   @override

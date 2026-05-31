@@ -54,7 +54,7 @@ class ApiService {
 
   static Future<Map<String, dynamic>> login(String username, String password) async {
     final res = await http.post(
-      Uri.parse('$baseUrl/auth/token'),
+      Uri.parse('$baseUrl/users/auth/token'),
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: 'username=$username&password=$password',
     );
@@ -68,7 +68,7 @@ class ApiService {
   static Future<Map<String, dynamic>> register(
       String email, String username, String password) async {
     final res = await http.post(
-      Uri.parse('$baseUrl/auth/register'),
+      Uri.parse('$baseUrl/users/auth/register'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'email': email,
@@ -99,12 +99,12 @@ class ApiService {
 
   static Future<List<Quest>> checkQuestCompletion() async {
     final res = await http.post(
-      Uri.parse('$baseUrl/quests/check'),
+      Uri.parse('$baseUrl/quests/check-completion'),
       headers: await _headers,
     );
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
-      return (data['completed'] as List).map((q) => Quest.fromJson(q)).toList();
+      return (data['completed_quests'] as List).map((q) => Quest.fromJson(q)).toList();
     }
     // 404 means no quests to check, return empty
     if (res.statusCode == 404) return [];
@@ -142,7 +142,7 @@ class ApiService {
 
   static Future<Map<String, dynamic>> getLeaderboard() async {
     final res = await http.get(
-      Uri.parse('$baseUrl/leaderboard'),
+      Uri.parse('$baseUrl/stats/leaderboard'),
       headers: await _headers,
     );
     if (res.statusCode == 200) {
@@ -174,7 +174,7 @@ class ApiService {
 
   static Future<Map<String, dynamic>> getGuild() async {
     final res = await http.get(
-      Uri.parse('$baseUrl/guild'),
+      Uri.parse('$baseUrl/guilds/'),
       headers: await _headers,
     );
     if (res.statusCode == 200) {
@@ -194,9 +194,50 @@ class ApiService {
     throw Exception('Failed to get inventory: ${res.statusCode}');
   }
 
+  static Future<void> useItem(int itemId) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/inventory/use/$itemId'),
+      headers: await _headers,
+    );
+    if (res.statusCode != 200) {
+      throw Exception('Failed to use item: ${res.statusCode} ${res.body}');
+    }
+  }
+
+  static Future<void> equipItem(int itemId) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/inventory/equip/$itemId'),
+      headers: await _headers,
+    );
+    if (res.statusCode != 200) {
+      throw Exception('Failed to equip item: ${res.statusCode} ${res.body}');
+    }
+  }
+
+  static Future<void> joinGuild(int guildId) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/guilds/$guildId/join'),
+      headers: await _headers,
+    );
+    if (res.statusCode != 200) {
+      throw Exception('Failed to join guild: ${res.statusCode} ${res.body}');
+    }
+  }
+
+  static Future<void> createGuild(String name, String description) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/guilds/'),
+      headers: await _headers,
+      body: jsonEncode({'name': name, 'description': description}),
+    );
+    if (res.statusCode != 200) {
+      throw Exception('Failed to create guild: ${res.statusCode} ${res.body}');
+    }
+  }
+
   static Future<void> connectLyfta(String apiKey) async {
     final res = await http.post(
-      Uri.parse('$baseUrl/lyfta/connect'),
+      Uri.parse('$baseUrl/integrations/lyfta/connect'),
       headers: await _headers,
       body: jsonEncode({'api_key': apiKey}),
     );
@@ -207,7 +248,7 @@ class ApiService {
 
   static Future<void> syncLyfta() async {
     final res = await http.post(
-      Uri.parse('$baseUrl/lyfta/sync'),
+      Uri.parse('$baseUrl/integrations/lyfta/sync'),
       headers: await _headers,
     );
     if (res.statusCode != 200) {
