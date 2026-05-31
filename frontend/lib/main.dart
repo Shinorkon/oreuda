@@ -3,9 +3,16 @@ import 'constants/theme.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/main_screen.dart';
 import 'services/auth_service.dart';
+import 'services/settings_service.dart';
+import 'services/notification_service.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize services
+  await SettingsService.instance.load();
+  await NotificationService.instance.init();
+
   runApp(const OreudaApp());
 }
 

@@ -36,7 +36,7 @@ class _QuestBoardScreenState extends State<QuestBoardScreen> {
       };
       final data = await ApiService.getQuests(type: typeMap[_selectedTab]);
       setState(() {
-        _quests = data.map((q) => Quest.fromJson(q)).toList();
+        _quests = data;
         _isLoading = false;
       });
     } catch (e) {

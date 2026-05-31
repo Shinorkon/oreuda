@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../services/auth_service.dart';
 import '../services/settings_service.dart';
+import '../services/health_connect_service.dart';
+import '../services/lyfta_service.dart';
 import 'auth_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -13,6 +15,8 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final SettingsService _settings = SettingsService.instance;
+  bool _lyftaLoading = false;
+  String? _lyftaError;
 
   @override
   void initState() {
@@ -31,6 +35,97 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _onSettingsChanged() {
     if (mounted) setState(() {});
+  }
+
+  Future<void> _requestHealthConnect() async {
+    final granted = await HealthConnectService.instance.requestAuthorization();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            granted
+                ? 'Health Connect permissions granted'
+                : 'Health Connect permissions denied. Enable in system settings.',
+          ),
+          backgroundColor: granted ? AppColors.successGreen : AppColors.hpCrimson,
+        ),
+      );
+    }
+  }
+
+  Future<void> _showLyftaConnectDialog() async {
+    final controller = TextEditingController();
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.slateSurface,
+        title: const Text('Connect Lyfta', style: TextStyle(color: AppColors.pureWhite)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Enter your Lyfta API key to import workout data.',
+              style: TextStyle(color: AppColors.mutedAsh, fontSize: 12),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              style: const TextStyle(color: AppColors.pureWhite),
+              decoration: InputDecoration(
+                hintText: 'Lyfta API Key',
+                hintStyle: const TextStyle(color: AppColors.mutedAsh),
+                filled: true,
+                fillColor: AppColors.deepAbyss,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: AppColors.holoCyan.withAlpha(77)),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.mutedAsh)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Connect', style: TextStyle(color: AppColors.holoCyan)),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && controller.text.isNotEmpty) {
+      setState(() {
+        _lyftaLoading = true;
+        _lyftaError = null;
+      });
+      try {
+        await LyftaService.connect(controller.text);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Lyfta connected successfully'),
+              backgroundColor: AppColors.successGreen,
+            ),
+          );
+        }
+      } catch (e) {
+        setState(() => _lyftaError = e.toString());
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to connect Lyfta: $e'),
+              backgroundColor: AppColors.hpCrimson,
+            ),
+          );
+        }
+      } finally {
+        setState(() => _lyftaLoading = false);
+      }
+    }
   }
 
   Future<void> _logout(BuildContext context) async {
@@ -91,15 +186,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               'Health Connect',
               _settings.healthConnectEnabled ? 'Connected' : 'Not connected',
               _settings.healthConnectEnabled ? AppColors.successGreen : AppColors.mutedAsh,
-              onTap: () => _settings.setHealthConnectEnabled(!_settings.healthConnectEnabled),
+              onTap: _requestHealthConnect,
             ),
-            _buildIntegrationCard(
-              Icons.fitness_center,
-              'Lyfta',
-              _settings.lyftaConnected ? 'Connected' : 'Not connected',
-              _settings.lyftaConnected ? AppColors.successGreen : AppColors.mutedAsh,
-              onTap: () => _settings.setLyftaConnected(!_settings.lyftaConnected),
-            ),
+            _buildLyftaCard(),
 
             const SizedBox(height: 16),
 
@@ -166,6 +255,101 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLyftaCard() {
+    return GestureDetector(
+      onTap: _settings.lyftaConnected
+          ? () async {
+              setState(() => _lyftaLoading = true);
+              try {
+                await LyftaService.sync();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Lyfta sync complete'),
+                      backgroundColor: AppColors.successGreen,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Sync failed: $e'),
+                      backgroundColor: AppColors.hpCrimson,
+                    ),
+                  );
+                }
+              } finally {
+                setState(() => _lyftaLoading = false);
+              }
+            }
+          : _showLyftaConnectDialog,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.slateSurface,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white.withAlpha((0.04 * 255).round())),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.holoCyan.withAlpha((0.1 * 255).round()),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: _lyftaLoading
+                  ? const Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.holoCyan,
+                        ),
+                      ),
+                    )
+                  : const Icon(Icons.fitness_center, color: AppColors.holoCyan, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Lyfta',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.pureWhite,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _settings.lyftaConnected ? 'Connected · Tap to sync' : 'Not connected · Tap to set up',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: _settings.lyftaConnected ? AppColors.successGreen : AppColors.mutedAsh,
+                    ),
+                  ),
+                  if (_lyftaError != null)
+                    Text(
+                      _lyftaError!,
+                      style: const TextStyle(fontSize: 10, color: AppColors.hpCrimson),
+                    ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: AppColors.mutedAsh, size: 20),
           ],
         ),
       ),

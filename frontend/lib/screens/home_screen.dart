@@ -1,17 +1,12 @@
-import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../constants/colors.dart';
 import '../models/quest.dart';
+import '../models/stats.dart';
 import '../services/api_service.dart';
 import '../services/health_connect_service.dart';
-import '../services/stat_engine.dart';
+import '../services/notification_service.dart';
 import '../services/settings_service.dart';
-import '../widgets/rank_badge.dart';
-import '../widgets/system_message.dart';
-import '../widgets/xp_bar.dart';
-import '../widgets/quest_card.dart';
-import 'notification_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,106 +16,92 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Map<String, dynamic> _userData = {};
+  bool _loading = true;
+  Map<String, dynamic>? _user;
   List<Quest> _quests = [];
-  Map<String, dynamic> _stats = {};
-  bool _isLoading = true;
-  String? _systemMessage;
-  HealthSnapshot? _healthSnapshot;
-  bool _healthSyncing = false;
+  PlayerStats? _stats;
+  HealthSnapshot? _health;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
     _loadData();
-    _syncHealthIfEnabled();
-  }
-
-  Future<void> _syncHealthIfEnabled() async {
-    final settings = SettingsService.instance;
-    if (!settings.isLoaded) await settings.load();
-
-    if (settings.healthConnectEnabled) {
-      setState(() => _healthSyncing = true);
-      try {
-        final snap = await HealthConnectService.instance.fetchToday();
-        if (snap.authorized) {
-          // Send to backend
-          await ApiService.syncHealth({
-            'date': DateTime.now().toIso8601String().split('T')[0],
-            ...snap.toJson(),
-          });
-          // Check quest completion
-          await ApiService.post('/quests/check-completion');
-        }
-        setState(() {
-          _healthSnapshot = snap;
-          _healthSyncing = false;
-        });
-        // Reload to get updated quests
-        await _loadData();
-      } catch (e) {
-        setState(() => _healthSyncing = false);
-      }
-    }
   }
 
   Future<void> _loadData() async {
+    setState(() => _loading = true);
     try {
+      // Sync health data
+      final health = await _syncHealthData();
+      // Check quest completion (backend auto-completes)
+      final completed = await ApiService.checkQuestCompletion();
+      // Send notifications for completed quests
+      if (completed.isNotEmpty && SettingsService.instance.questWarnings) {
+        for (final q in completed) {
+          await NotificationService.instance.showQuestComplete(
+            questTitle: q.title,
+            xpReward: q.xpReward,
+            goldReward: q.goldReward,
+          );
+        }
+      }
+      // Fetch daily quests
+      final quests = await ApiService.getDailyQuests();
+      // Fetch user and stats
       final user = await ApiService.getMe();
-      final questsData = await ApiService.getDailyQuests();
       final stats = await ApiService.getStats();
 
-      // Also get health-calculated stats if available
-      Map<String, dynamic> healthStats = {};
-      try {
-        healthStats = await ApiService.getHealthStats();
-      } catch (_) {
-        // Health stats may not be available
-      }
-
       setState(() {
-        _userData = user;
-        _quests = questsData.map((q) => Quest.fromJson(q)).toList();
-        _stats = healthStats.isNotEmpty ? healthStats : stats;
-        _isLoading = false;
+        _user = user;
+        _quests = quests;
+        _stats = stats;
+        _health = health;
+        _loading = false;
       });
     } catch (e) {
-      setState(() => _isLoading = false);
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
     }
   }
 
-  String _getSystemMessage() {
-    final user = _userData['user'] ?? {};
-    final streak = user['streak_days'] ?? 0;
-
-    // Check for quests nearing completion
-    final nearlyComplete = _quests.where((q) {
-      if (q.targetValue == null || q.targetValue == 0) return false;
-      return q.progress > 0.5 && q.progress < 1.0;
-    }).toList();
-
-    if (nearlyComplete.isNotEmpty) {
-      final q = nearlyComplete.first;
-      final remaining = q.targetValue! - q.currentValue;
-      if (q.metricType == 'steps') {
-        return '${q.title}: ${remaining.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (m) => ',')} steps to go!';
-      } else if (q.metricType == 'calories') {
-        return '${q.title}: $remaining cal to go!';
+  Future<HealthSnapshot?> _syncHealthData() async {
+    try {
+      final snapshot = await HealthConnectService.instance.fetchToday();
+      if (snapshot != null) {
+        await ApiService.syncHealth(snapshot);
+        return snapshot;
       }
-      return '${q.title}: Almost there!';
+    } catch (e) {
+      // Health Connect not available or not authorized
+      debugPrint('Health sync error: $e');
     }
+    return null;
+  }
 
-    if (streak == 0) {
-      return 'Complete a quest today to start your streak.';
+  Future<void> _completeQuest(Quest quest) async {
+    try {
+      await ApiService.completeQuest(quest.id);
+      await NotificationService.instance.showQuestComplete(
+        questTitle: quest.title,
+        xpReward: quest.xpReward,
+        goldReward: quest.goldReward,
+      );
+      _loadData();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed: $e')),
+        );
+      }
     }
-
-    return 'Daily quests reset at midnight. Complete all for +150 XP bonus.';
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
+    if (_loading) {
       return const Scaffold(
         backgroundColor: AppColors.voidNavy,
         body: Center(
@@ -129,337 +110,463 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    final user = _userData['user'] ?? {};
-    final stats = _stats;
+    if (_error != null) {
+      return Scaffold(
+        backgroundColor: AppColors.voidNavy,
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline, color: AppColors.hpCrimson, size: 48),
+              const SizedBox(height: 16),
+              Text(_error!, style: const TextStyle(color: AppColors.pureWhite)),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _loadData,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: AppColors.voidNavy,
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _loadData,
-          color: AppColors.holoCyan,
-          backgroundColor: AppColors.slateSurface,
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'OREUDA',
-                        style: GoogleFonts.orbitron(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.holoCyan,
-                          letterSpacing: 4,
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          if (_healthSyncing)
-                            const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: AppColors.holoCyan,
-                              ),
-                            ),
-                          const SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => const NotificationScreen(
-                                    title: 'System Alert',
-                                    message: 'Your daily quests have been generated. Execute.',
-                                  ),
-                                ),
-                              );
-                            },
-                            child: Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: AppColors.slateSurface,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: AppColors.holoCyan.withAlpha(51),
-                                ),
-                              ),
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.notifications_outlined,
-                                    color: AppColors.pureWhite,
-                                    size: 18,
-                                  ),
-                                  Positioned(
-                                    top: 8,
-                                    right: 8,
-                                    child: Container(
-                                      width: 8,
-                                      height: 8,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: AppColors.hpCrimson,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Rank Card
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppColors.deepAbyss, AppColors.slateSurface],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: AppColors.holoCyan.withAlpha(77),
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  user['display_name'] ?? 'Hunter',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.pureWhite,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Rank ${user['rank'] ?? 'E'} Hunter',
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    color: AppColors.systemSilver,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            RankBadge(rank: user['rank'] ?? 'E'),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        XpBar(
-                          currentXp: user['xp'] ?? 0,
-                          level: user['level'] ?? 1,
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.monetization_on, size: 14, color: AppColors.ariseGold),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${user['gold'] ?? 0} G',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.ariseGold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                const Icon(Icons.local_fire_department, size: 14, color: AppColors.hpCrimson),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${user['streak_days'] ?? 0}d streak',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.hpCrimson,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Stats Row
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: BoxDecoration(
-                      color: AppColors.slateSurface,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: Colors.white.withAlpha(13),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildStatItem('STR', stats['str_stat'] ?? 10, AppColors.strColor),
-                        _buildStatItem('AGI', stats['agi_stat'] ?? 10, AppColors.agiColor),
-                        _buildStatItem('VIT', stats['vit_stat'] ?? 10, AppColors.vitColor),
-                        _buildStatItem('INT', stats['int_stat'] ?? 10, AppColors.intColor),
-                        _buildStatItem('SEN', stats['sen_stat'] ?? 10, AppColors.senColor),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // System Message
-                SystemMessage(message: _getSystemMessage()),
-
-                const SizedBox(height: 16),
-
-                // Daily Quests Section
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'DAILY QUESTS',
-                            style: GoogleFonts.orbitron(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.mutedAsh,
-                              letterSpacing: 2,
-                            ),
-                          ),
-                          if (_healthSnapshot != null && _healthSnapshot!.authorized)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: AppColors.successGreen.withAlpha(30),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.favorite, size: 10, color: AppColors.successGreen),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Live',
-                                    style: TextStyle(
-                                      fontSize: 9,
-                                      color: AppColors.successGreen,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      if (_quests.isEmpty)
-                        const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(24),
-                            child: Text(
-                              'No active quests. Pull down to generate daily quests.',
-                              style: TextStyle(color: AppColors.mutedAsh, fontSize: 12),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        )
-                      else
-                        ..._quests.map((q) => QuestCard(
-                          quest: q,
-                          onComplete: q.status == 'active' ? () => _completeQuest(q.id) : null,
-                        )),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 80),
-              ],
+      body: RefreshIndicator(
+        color: AppColors.holoCyan,
+        backgroundColor: AppColors.slateSurface,
+        onRefresh: _loadData,
+        child: CustomScrollView(
+          slivers: [
+            // App Bar
+            SliverToBoxAdapter(
+              child: _buildHeader(),
             ),
-          ),
+            // Stats Row
+            SliverToBoxAdapter(
+              child: _buildStatsRow(),
+            ),
+            // Health Data
+            if (_health != null)
+              SliverToBoxAdapter(
+                child: _buildHealthCard(),
+              ),
+            // Quests Section
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'ACTIVE QUESTS',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.mutedAsh,
+                        letterSpacing: 3,
+                      ),
+                    ),
+                    Text(
+                      '${_quests.where((q) => q.status == 'active').length} REMAINING',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: AppColors.mutedAsh,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => _buildQuestCard(_quests[index]),
+                childCount: _quests.length,
+              ),
+            ),
+            const SliverPadding(padding: EdgeInsets.only(bottom: 32)),
+          ],
         ),
       ),
     );
   }
 
-  Future<void> _completeQuest(int questId) async {
-    try {
-      await ApiService.completeQuest(questId);
-      await _loadData();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Quest completed. The System acknowledges your effort.'),
-            backgroundColor: AppColors.successGreen,
+  Widget _buildHeader() {
+    final level = _user?['level'] ?? 1;
+    final xp = _user?['xp'] ?? 0;
+    final nextLevelXp = level * 1000;
+    final progress = (xp / nextLevelXp).clamp(0.0, 1.0);
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 48, 16, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _user?['username']?.toUpperCase() ?? 'HUNTER',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.pureWhite,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'RANK: ${_user?['rank'] ?? 'E'}  |  LEVEL $level',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.holoCyan,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.ariseGold.withAlpha((0.1 * 255).round()),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.monetization_on, color: AppColors.ariseGold, size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${_user?['gold'] ?? 0}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.ariseGold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to complete quest.'),
-            backgroundColor: AppColors.hpCrimson,
+          const SizedBox(height: 16),
+          // XP Bar
+          Container(
+            height: 6,
+            decoration: BoxDecoration(
+              color: AppColors.deepAbyss,
+              borderRadius: BorderRadius.circular(3),
+            ),
+            child: FractionallySizedBox(
+              alignment: Alignment.centerLeft,
+              widthFactor: progress,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.holoCyan, AppColors.holoCyan],
+                  ),
+                  borderRadius: BorderRadius.circular(3),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.holoCyan.withAlpha((0.5 * 255).round()),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-        );
-      }
-    }
+          const SizedBox(height: 6),
+          Text(
+            '$xp / $nextLevelXp XP',
+            style: const TextStyle(
+              fontSize: 10,
+              color: AppColors.mutedAsh,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
-  Widget _buildStatItem(String label, int value, Color color) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 10,
-            color: AppColors.mutedAsh,
-            letterSpacing: 1,
+  Widget _buildStatsRow() {
+    if (_stats == null) return const SizedBox.shrink();
+
+    final stats = <Map<String, dynamic>>[
+      {'label': 'STR', 'value': _stats!.strength, 'color': AppColors.hpCrimson},
+      {'label': 'AGI', 'value': _stats!.agility, 'color': AppColors.holoCyan},
+      {'label': 'VIT', 'value': _stats!.vitality, 'color': AppColors.successGreen},
+      {'label': 'INT', 'value': _stats!.intelligence, 'color': AppColors.ariseGold},
+      {'label': 'SEN', 'value': _stats!.sense, 'color': AppColors.mutedAsh},
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: stats.map((s) => Expanded(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.slateSurface,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: (s['color'] as Color).withAlpha((0.2 * 255).round()),
+              ),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  s['label'] as String,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: s['color'] as Color,
+                    letterSpacing: 2,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${s['value']}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.pureWhite,
+                  ),
+                ),
+              ],
+            ),
           ),
+        )).toList(),
+      ),
+    );
+  }
+
+  Widget _buildHealthCard() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.slateSurface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withAlpha((0.04 * 255).round())),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'TODAY\'S DATA',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: AppColors.mutedAsh,
+              letterSpacing: 3,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _buildHealthMetric(Icons.directions_walk, '${_health!.steps}', 'Steps'),
+              _buildHealthMetric(Icons.local_fire_department, '${_health!.caloriesBurned}', 'Kcal'),
+              _buildHealthMetric(Icons.bedtime, '${(_health!.sleepMinutes / 60).toStringAsFixed(1)}h', 'Sleep'),
+              _buildHealthMetric(Icons.fitness_center, '${_health!.workoutCount}', 'Workouts'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHealthMetric(IconData icon, String value, String label) {
+    return Expanded(
+      child: Column(
+        children: [
+          Icon(icon, color: AppColors.holoCyan, size: 20),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: AppColors.pureWhite,
+            ),
+          ),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 10,
+              color: AppColors.mutedAsh,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuestCard(Quest quest) {
+    final isCompleted = quest.status == 'completed';
+    final progress = quest.targetValue != null && quest.targetValue! > 0
+        ? (quest.currentValue / quest.targetValue!).clamp(0.0, 1.0)
+        : 0.0;
+
+    Color questColor = AppColors.holoCyan;
+    if (quest.questType == 'daily') questColor = AppColors.holoCyan;
+    if (quest.questType == 'weekly') questColor = AppColors.ariseGold;
+    if (quest.questType == 'dungeon') questColor = AppColors.hpCrimson;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.slateSurface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isCompleted
+              ? AppColors.successGreen.withAlpha((0.3 * 255).round())
+              : Colors.white.withAlpha((0.04 * 255).round()),
         ),
-        const SizedBox(height: 4),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  quest.title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isCompleted ? AppColors.successGreen : AppColors.pureWhite,
+                    decoration: isCompleted ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: questColor.withAlpha((0.1 * 255).round()),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  quest.questType.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    color: questColor,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            quest.description,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.mutedAsh,
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Progress bar
+          if (quest.targetValue != null && quest.targetValue! > 0)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${quest.currentValue} / ${quest.targetValue}',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.mutedAsh,
+                      ),
+                    ),
+                    Text(
+                      '${(progress * 100).toInt()}%',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: questColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.deepAbyss,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                  child: FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: progress,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isCompleted ? AppColors.successGreen : questColor,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _buildRewardBadge(Icons.star, '${quest.xpReward} XP', AppColors.ariseGold),
+              const SizedBox(width: 8),
+              _buildRewardBadge(Icons.monetization_on, '${quest.goldReward}', AppColors.ariseGold),
+              const Spacer(),
+              if (!isCompleted)
+                GestureDetector(
+                  onTap: () => _completeQuest(quest),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: questColor.withAlpha((0.15 * 255).round()),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: questColor.withAlpha((0.3 * 255).round()),
+                      ),
+                    ),
+                    child: Text(
+                      'COMPLETE',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: questColor,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRewardBadge(IconData icon, String text, Color color) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: color, size: 12),
+        const SizedBox(width: 2),
         Text(
-          '$value',
+          text,
           style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
+            fontSize: 11,
             color: color,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],
