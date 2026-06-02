@@ -7,6 +7,7 @@ import '../services/api_service.dart';
 import '../services/health_connect_service.dart';
 import '../services/notification_service.dart';
 import '../services/settings_service.dart';
+import '../services/tab_notifier.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,6 +28,19 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadData();
+    TabNotifier.index.addListener(_onTabChanged);
+  }
+
+  @override
+  void dispose() {
+    TabNotifier.index.removeListener(_onTabChanged);
+    super.dispose();
+  }
+
+  void _onTabChanged() {
+    if (TabNotifier.index.value == 0 && mounted) {
+      _loadData();
+    }
   }
 
   Future<void> _loadData() async {

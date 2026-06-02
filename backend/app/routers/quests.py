@@ -5,6 +5,7 @@ from app.database import get_db
 from app import models, schemas, crud
 from app.auth import get_current_active_user
 from app.quest_engine import QuestEngine
+from app.sanitization import sanitize_quest_input
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
@@ -24,6 +25,7 @@ def list_quests(
 
 @router.post("/", response_model=schemas.QuestOut)
 def create_quest(quest: schemas.QuestCreate, current_user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    quest.title, quest.description = sanitize_quest_input(quest.title, quest.description)
     return crud.create_quest(db, current_user.id, quest)
 
 

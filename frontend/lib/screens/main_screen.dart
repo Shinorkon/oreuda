@@ -5,6 +5,7 @@ import 'store_screen.dart';
 import 'guild_screen.dart';
 import 'profile_screen.dart';
 import '../widgets/bottom_nav.dart';
+import '../services/tab_notifier.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -24,6 +25,11 @@ class _MainScreenState extends State<MainScreen> {
     ProfileScreen(),
   ];
 
+  void _onTabTapped(int index) {
+    setState(() => _currentIndex = index);
+    TabNotifier.index.value = index;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,7 +39,7 @@ class _MainScreenState extends State<MainScreen> {
       ),
       bottomNavigationBar: BottomNav(
         currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
+        onTap: _onTabTapped,
       ),
     );
   }

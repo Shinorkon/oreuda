@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../services/api_service.dart';
+import '../services/tab_notifier.dart';
 
 class StoreScreen extends StatefulWidget {
   const StoreScreen({super.key});
@@ -19,6 +20,19 @@ class _StoreScreenState extends State<StoreScreen> {
   void initState() {
     super.initState();
     _loadData();
+    TabNotifier.index.addListener(_onTabChanged);
+  }
+
+  @override
+  void dispose() {
+    TabNotifier.index.removeListener(_onTabChanged);
+    super.dispose();
+  }
+
+  void _onTabChanged() {
+    if (TabNotifier.index.value == 2 && mounted) {
+      _loadData();
+    }
   }
 
   Future<void> _loadData() async {

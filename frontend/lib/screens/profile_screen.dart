@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../services/api_service.dart';
+import '../services/tab_notifier.dart';
 import '../widgets/rank_badge.dart';
+import 'leaderboard_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -18,6 +20,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _loadData();
+    TabNotifier.index.addListener(_onTabChanged);
+  }
+
+  @override
+  void dispose() {
+    TabNotifier.index.removeListener(_onTabChanged);
+    super.dispose();
+  }
+
+  void _onTabChanged() {
+    if (TabNotifier.index.value == 4 && mounted) {
+      _loadData();
+    }
   }
 
   Future<void> _loadData() async {
@@ -29,6 +44,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       });
     } catch (e) {
       setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load profile: $e'),
+            backgroundColor: AppColors.hpCrimson,
+          ),
+        );
+      }
     }
   }
 
@@ -43,7 +66,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
 
-    final user = _profileData?['user'];
+    final user = _profileData;
     final stats = _profileData?['stats'];
     final titles = (_profileData?['titles'] as List<dynamic>? ?? []);
 
@@ -298,6 +321,71 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               }).toList(),
                             ),
                           ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Leaderboard Button
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const LeaderboardScreen(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppColors.slateSurface,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: AppColors.ariseGold.withAlpha((0.3 * 255).round()),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.emoji_events,
+                                color: AppColors.ariseGold.withAlpha((0.8 * 255).round()),
+                                size: 24,
+                              ),
+                              const SizedBox(width: 12),
+                              const Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'GLOBAL RANKINGS',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.pureWhite,
+                                        letterSpacing: 2,
+                                      ),
+                                    ),
+                                    SizedBox(height: 2),
+                                    Text(
+                                      'See where you stand among all hunters',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: AppColors.mutedAsh,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(
+                                Icons.chevron_right,
+                                color: AppColors.mutedAsh,
+                                size: 20,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

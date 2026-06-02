@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'constants/theme.dart';
+import 'constants/colors.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/main_screen.dart';
 import 'services/auth_service.dart';
@@ -8,6 +10,22 @@ import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Lock to portrait
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
+  // Style system UI
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: AppColors.voidNavy,
+      systemNavigationBarIconBrightness: Brightness.light,
+    ),
+  );
 
   // Initialize services
   await SettingsService.instance.load();

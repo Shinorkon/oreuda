@@ -362,10 +362,18 @@ def complete_quest(db: Session, quest: models.Quest, user: models.User) -> dict:
 def fail_quest(db: Session, quest: models.Quest, user: models.User) -> dict:
     quest.status = "failed"
     quest.completed_at = datetime.utcnow()
+    # Penalty: break streak, small gold loss
+    user.streak_days = 0
+    penalty_gold = min(user.gold, 10)
+    user.gold -= penalty_gold
     db.commit()
     return {
         "quest_id": quest.id,
         "message": "Quest failed. The path darkens, but you have walked this way before.",
+        "penalty": {
+            "streak_reset": True,
+            "gold_lost": penalty_gold,
+        },
     }
 
 
@@ -433,11 +441,12 @@ ITEM_POOL = {
 }
 
 
-def open_loot_box(db: Session, user: models.User, box_type: str) -> dict:
-    if user.gold < 200:
-        raise ValueError("Not enough gold")
-
-    user.gold -= 200
+def open_loot_box(db: Session, user: models.User, box_type: str, deduct_gold: bool = True) -> dict:
+    """Open a loot box. If deduct_gold=True, charges 200 gold (for direct use)."""
+    if deduct_gold:
+        if user.gold < 200:
+            raise ValueError("Not enough gold")
+        user.gold -= 200
 
     # Determine rarity
     roll = random.random()
@@ -576,6 +585,8 @@ def seed_store_items(db: Session):
 
 
 def purchase_item(db: Session, user: models.User, store_item: models.StoreItem) -> dict:
+    if store_item.stock is not None and store_item.stock <= 0:
+        raise ValueError("Item out of stock")
     if user.gold < store_item.gold_cost:
         raise ValueError("Not enough gold")
     if user.essence < store_item.essence_cost:
@@ -583,10 +594,12 @@ def purchase_item(db: Session, user: models.User, store_item: models.StoreItem) 
 
     user.gold -= store_item.gold_cost
     user.essence -= store_item.essence_cost
+    if store_item.stock is not None:
+        store_item.stock -= 1
 
     if store_item.item_type == "lootbox":
         box_type = "blessed" if "blessed" in store_item.effect else "cursed"
-        result = open_loot_box(db, user, box_type)
+        result = open_loot_box(db, user, box_type, deduct_gold=False)
         return {
             "success": True,
             "item_name": result["item_name"],
@@ -601,6 +614,7 @@ def purchase_item(db: Session, user: models.User, store_item: models.StoreItem) 
             db, user.id, store_item.name, store_item.item_type,
             store_item.rarity, 1, store_item.stat_bonuses or {}, store_item.description
         )
+        db.commit()
         return {
             "success": True,
             "item_name": store_item.name,

@@ -39,12 +39,52 @@ class _AuthScreenState extends State<AuthScreen> {
       _error = null;
     });
 
+    // Client-side validation
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text;
+    final email = _emailController.text.trim();
+
+    if (username.isEmpty) {
+      setState(() {
+        _error = 'Username is required.';
+        _isLoading = false;
+      });
+      return;
+    }
+    if (password.isEmpty) {
+      setState(() {
+        _error = 'Password is required.';
+        _isLoading = false;
+      });
+      return;
+    }
+    if (!_isLogin) {
+      if (email.isEmpty) {
+        setState(() {
+          _error = 'Email is required.';
+          _isLoading = false;
+        });
+        return;
+      }
+      if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
+        setState(() {
+          _error = 'Enter a valid email address.';
+          _isLoading = false;
+        });
+        return;
+      }
+      if (password.length < 8) {
+        setState(() {
+          _error = 'Password must be at least 8 characters.';
+          _isLoading = false;
+        });
+        return;
+      }
+    }
+
     try {
       if (_isLogin) {
-        final data = await ApiService.login(
-          _usernameController.text.trim(),
-          _passwordController.text,
-        );
+        final data = await ApiService.login(username, password);
         if (data.containsKey('access_token')) {
           if (mounted) {
             Navigator.of(context).pushReplacement(
@@ -56,11 +96,7 @@ class _AuthScreenState extends State<AuthScreen> {
           setState(() => _error = detail is String ? detail : 'Login failed');
         }
       } else {
-        final data = await ApiService.register(
-          _emailController.text.trim(),
-          _usernameController.text.trim(),
-          _passwordController.text,
-        );
+        final data = await ApiService.register(email, username, password);
         if (data.containsKey('id')) {
           final loginData = await ApiService.login(
             _usernameController.text.trim(),

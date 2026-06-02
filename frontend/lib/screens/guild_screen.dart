@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../services/api_service.dart';
+import '../services/tab_notifier.dart';
 
 class GuildScreen extends StatefulWidget {
   const GuildScreen({super.key});
@@ -18,6 +19,19 @@ class _GuildScreenState extends State<GuildScreen> {
   void initState() {
     super.initState();
     _loadData();
+    TabNotifier.index.addListener(_onTabChanged);
+  }
+
+  @override
+  void dispose() {
+    TabNotifier.index.removeListener(_onTabChanged);
+    super.dispose();
+  }
+
+  void _onTabChanged() {
+    if (TabNotifier.index.value == 3 && mounted) {
+      _loadData();
+    }
   }
 
   Future<void> _loadData() async {

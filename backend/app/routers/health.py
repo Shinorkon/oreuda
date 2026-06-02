@@ -28,6 +28,26 @@ class HealthSnapshotIn(schemas.BaseModel):
     workout_volume_kg: float = 0.0
     weight_kg: Optional[float] = None
 
+    @schemas.model_validator(mode='after')
+    def validate_health_data(self):
+        if self.steps < 0:
+            raise ValueError('steps cannot be negative')
+        if self.calories_burned < 0:
+            raise ValueError('calories_burned cannot be negative')
+        if self.sleep_minutes < 0:
+            raise ValueError('sleep_minutes cannot be negative')
+        if self.workouts_count < 0:
+            raise ValueError('workouts_count cannot be negative')
+        if self.workout_volume_kg < 0:
+            raise ValueError('workout_volume_kg cannot be negative')
+        if self.resting_hr is not None and (self.resting_hr < 30 or self.resting_hr > 220):
+            raise ValueError('resting_hr must be between 30 and 220')
+        if self.weight_kg is not None and (self.weight_kg < 20 or self.weight_kg > 300):
+            raise ValueError('weight_kg must be between 20 and 300')
+        if self.date > date.today():
+            raise ValueError('date cannot be in the future')
+        return self
+
 
 class HealthSnapshotOut(schemas.BaseModel):
     id: int

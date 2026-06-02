@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../models/quest.dart';
 import '../services/api_service.dart';
+import '../services/tab_notifier.dart';
 import '../widgets/quest_card.dart';
 
 class QuestBoardScreen extends StatefulWidget {
@@ -22,6 +23,19 @@ class _QuestBoardScreenState extends State<QuestBoardScreen> {
   void initState() {
     super.initState();
     _loadQuests();
+    TabNotifier.index.addListener(_onTabChanged);
+  }
+
+  @override
+  void dispose() {
+    TabNotifier.index.removeListener(_onTabChanged);
+    super.dispose();
+  }
+
+  void _onTabChanged() {
+    if (TabNotifier.index.value == 1 && mounted) {
+      _loadQuests();
+    }
   }
 
   Future<void> _loadQuests() async {
@@ -40,7 +54,17 @@ class _QuestBoardScreenState extends State<QuestBoardScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load quests: $e'),
+            backgroundColor: AppColors.hpCrimson,
+          ),
+        );
+      }
     }
   }
 
@@ -51,6 +75,14 @@ class _QuestBoardScreenState extends State<QuestBoardScreen> {
       await _loadQuests();
     } catch (e) {
       setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to generate quests: $e'),
+            backgroundColor: AppColors.hpCrimson,
+          ),
+        );
+      }
     }
   }
 
