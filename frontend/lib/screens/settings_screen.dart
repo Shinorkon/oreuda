@@ -161,7 +161,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
       ),
     );
-    if (confirmed == true) {
+    if (confirmed == true && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Stat reset not yet implemented on backend.'),
@@ -194,7 +194,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
       ),
     );
-    if (confirmed == true) {
+    if (confirmed == true && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Account deletion not yet implemented on backend.'),

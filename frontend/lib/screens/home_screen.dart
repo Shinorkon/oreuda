@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../models/quest.dart';
@@ -85,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final snapshot = await HealthConnectService.instance.fetchToday();
       // Only sync if Health Connect is actually authorized and has real data
-      if (snapshot != null && snapshot.authorized && snapshot.steps > 0) {
+      if (snapshot.authorized && snapshot.steps > 0) {
         await ApiService.syncHealth(snapshot);
         return snapshot;
       }

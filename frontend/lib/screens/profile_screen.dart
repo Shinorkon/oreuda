@@ -46,7 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
-          Widget _buildStatRow(String label, int value, ValueChanged<int> onChanged, Color color) {
+          Widget buildStatRow(String label, int value, ValueChanged<int> onChanged, Color color) {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Row(
@@ -101,11 +101,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   style: const TextStyle(fontSize: 12, color: AppColors.ariseGold, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 16),
-                _buildStatRow('STR', alloc.str, (v) => alloc.str = v, AppColors.hpCrimson),
-                _buildStatRow('AGI', alloc.agi, (v) => alloc.agi = v, AppColors.holoCyan),
-                _buildStatRow('VIT', alloc.vit, (v) => alloc.vit = v, AppColors.successGreen),
-                _buildStatRow('INT', alloc.int_, (v) => alloc.int_ = v, AppColors.ariseGold),
-                _buildStatRow('SEN', alloc.sen, (v) => alloc.sen = v, AppColors.mutedAsh),
+                buildStatRow('STR', alloc.str, (v) => alloc.str = v, AppColors.hpCrimson),
+                buildStatRow('AGI', alloc.agi, (v) => alloc.agi = v, AppColors.holoCyan),
+                buildStatRow('VIT', alloc.vit, (v) => alloc.vit = v, AppColors.successGreen),
+                buildStatRow('INT', alloc.int_, (v) => alloc.int_ = v, AppColors.ariseGold),
+                buildStatRow('SEN', alloc.sen, (v) => alloc.sen = v, AppColors.mutedAsh),
               ],
             ),
             actions: [

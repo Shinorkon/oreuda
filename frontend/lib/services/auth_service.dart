@@ -29,7 +29,9 @@ class AuthService {
       // Base64Url decode payload
       var payload = parts[1];
       // Add padding if needed
-      while (payload.length % 4 != 0) payload += '=';
+      while (payload.length % 4 != 0) {
+        payload += '=';
+      }
       final decoded = utf8.decode(base64Url.decode(payload));
       final data = jsonDecode(decoded);
       if (data['exp'] == null) return false;
