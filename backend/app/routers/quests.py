@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from typing import Optional, List
 from app.database import get_db
@@ -40,7 +40,7 @@ def get_daily_quests(current_user: models.User = Depends(get_current_active_user
 
 @router.post("/generate-daily", response_model=List[schemas.QuestOut])
 @limiter.limit("3/hour")
-def generate_daily(current_user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+def generate_daily(request: Request, current_user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     """Force regenerate daily quests (rate limited to 3/hour)."""
     return QuestEngine.generate_daily_quests(db, current_user)
 
