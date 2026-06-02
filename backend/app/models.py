@@ -39,7 +39,7 @@ class PlayerStats(Base):
     __tablename__ = "player_stats"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True)
     str_stat = Column(Integer, default=10)
     agi_stat = Column(Integer, default=10)
     vit_stat = Column(Integer, default=10)
@@ -57,7 +57,7 @@ class Quest(Base):
     __tablename__ = "quests"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     title = Column(String, nullable=False)
     description = Column(Text, default="")
     quest_type = Column(String, default="daily")  # daily/weekly/chain/dungeon/main/side/urgent/custom/redemption
@@ -85,8 +85,8 @@ class QuestCompletion(Base):
     __tablename__ = "quest_completions"
 
     id = Column(Integer, primary_key=True, index=True)
-    quest_id = Column(Integer, ForeignKey("quests.id"))
-    user_id = Column(Integer, ForeignKey("users.id"))
+    quest_id = Column(Integer, ForeignKey("quests.id", ondelete="CASCADE"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     completed_at = Column(DateTime, default=datetime.datetime.utcnow)
     verification_method = Column(String, default="manual")
     xp_earned = Column(Integer, default=0)
@@ -97,7 +97,7 @@ class InventoryItem(Base):
     __tablename__ = "inventory_items"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     item_name = Column(String, nullable=False)
     item_type = Column(String, default="consumable")  # consumable/equipment/material/lootbox/questitem
     rarity = Column(String, default="common")  # common/uncommon/rare/epic/legendary
@@ -113,7 +113,7 @@ class Title(Base):
     __tablename__ = "titles"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     title_name = Column(String, nullable=False)
     title_key = Column(String, nullable=False)
     description = Column(Text, default="")
@@ -133,7 +133,7 @@ class Guild(Base):
     description = Column(Text, default="")
     max_members = Column(Integer, default=10)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    created_by = Column(Integer, ForeignKey("users.id"))
+    created_by = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
 
     members = relationship("GuildMember", back_populates="guild")
 
@@ -142,8 +142,8 @@ class GuildMember(Base):
     __tablename__ = "guild_members"
 
     id = Column(Integer, primary_key=True, index=True)
-    guild_id = Column(Integer, ForeignKey("guilds.id"))
-    user_id = Column(Integer, ForeignKey("users.id"))
+    guild_id = Column(Integer, ForeignKey("guilds.id", ondelete="CASCADE"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     joined_at = Column(DateTime, default=datetime.datetime.utcnow)
     role = Column(String, default="member")  # leader/officer/member
 
@@ -155,7 +155,7 @@ class DungeonRun(Base):
     __tablename__ = "dungeon_runs"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     dungeon_name = Column(String, nullable=False)
     dungeon_type = Column(String, default="normal")  # normal/red/double/instant/demon_castle
     total_days = Column(Integer, default=30)
@@ -171,7 +171,7 @@ class ScreentimeSetting(Base):
     __tablename__ = "screentime_settings"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True)
     daily_limit_minutes = Column(Integer, default=300)
     category_limits = Column(JSON, default=dict)
     app_limits = Column(JSON, default=dict)
@@ -207,7 +207,7 @@ class HealthSnapshot(Base):
     __tablename__ = "health_snapshots"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     date = Column(Date, nullable=False, index=True)
     steps = Column(Integer, default=0)
     calories_burned = Column(Integer, default=0)
@@ -232,7 +232,7 @@ class LyftaIntegration(Base):
     __tablename__ = "lyfta_integrations"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
     api_key_hash = Column(String(255), nullable=False)  # encrypted API key
     is_active = Column(Boolean, default=True)
     last_sync_at = Column(DateTime, nullable=True)
