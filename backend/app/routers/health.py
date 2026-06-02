@@ -7,6 +7,7 @@ from datetime import date, timedelta
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import model_validator
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -28,7 +29,7 @@ class HealthSnapshotIn(schemas.BaseModel):
     workout_volume_kg: float = 0.0
     weight_kg: Optional[float] = None
 
-    @schemas.model_validator(mode='after')
+    @model_validator(mode='after')
     def validate_health_data(self):
         if self.steps < 0:
             raise ValueError('steps cannot be negative')
