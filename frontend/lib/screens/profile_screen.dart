@@ -5,6 +5,11 @@ import '../services/tab_notifier.dart';
 import '../widgets/rank_badge.dart';
 import 'leaderboard_screen.dart';
 
+class _StatAllocation {
+  int str = 0, agi = 0, vit = 0, int_ = 0, sen = 0;
+  int get total => str + agi + vit + int_ + sen;
+}
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -32,6 +37,119 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _onTabChanged() {
     if (TabNotifier.index.value == 4 && mounted) {
       _loadData();
+    }
+  }
+
+  Future<void> _showStatAllocationDialog(int availablePoints) async {
+    final alloc = _StatAllocation();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          Widget _buildStatRow(String label, int value, ValueChanged<int> onChanged, Color color) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 40,
+                    child: Text(
+                      label,
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.remove_circle_outline, color: AppColors.mutedAsh, size: 20),
+                    onPressed: value > 0 ? () => setDialogState(() => onChanged(value - 1)) : null,
+                  ),
+                  SizedBox(
+                    width: 32,
+                    child: Text(
+                      '$value',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.pureWhite),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.add_circle_outline, color: AppColors.holoCyan, size: 20),
+                    onPressed: alloc.total < availablePoints
+                        ? () => setDialogState(() => onChanged(value + 1))
+                        : null,
+                  ),
+                  const Spacer(),
+                  Text(
+                    'Allocating: $value',
+                    style: const TextStyle(fontSize: 11, color: AppColors.mutedAsh),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return AlertDialog(
+            backgroundColor: AppColors.slateSurface,
+            title: const Text(
+              'ALLOCATE STATS',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.holoCyan, letterSpacing: 2),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Points available: ${availablePoints - alloc.total}',
+                  style: const TextStyle(fontSize: 12, color: AppColors.ariseGold, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 16),
+                _buildStatRow('STR', alloc.str, (v) => alloc.str = v, AppColors.hpCrimson),
+                _buildStatRow('AGI', alloc.agi, (v) => alloc.agi = v, AppColors.holoCyan),
+                _buildStatRow('VIT', alloc.vit, (v) => alloc.vit = v, AppColors.successGreen),
+                _buildStatRow('INT', alloc.int_, (v) => alloc.int_ = v, AppColors.ariseGold),
+                _buildStatRow('SEN', alloc.sen, (v) => alloc.sen = v, AppColors.mutedAsh),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel', style: TextStyle(color: AppColors.mutedAsh)),
+              ),
+              ElevatedButton(
+                onPressed: alloc.total > 0 ? () => Navigator.pop(ctx, true) : null,
+                child: const Text('Confirm'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    if (confirmed == true && alloc.total > 0) {
+      setState(() => _isLoading = true);
+      try {
+        await ApiService.allocateStats(
+          str: alloc.str,
+          agi: alloc.agi,
+          vit: alloc.vit,
+          int_: alloc.int_,
+          sen: alloc.sen,
+        );
+        await _loadData();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Stats allocated. You have grown stronger.'),
+              backgroundColor: AppColors.successGreen,
+            ),
+          );
+        }
+      } catch (e) {
+        setState(() => _isLoading = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to allocate: $e'), backgroundColor: AppColors.hpCrimson),
+          );
+        }
+      }
     }
   }
 
@@ -175,12 +293,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             _buildStatBar('SEN', stats?['sen_stat'] ?? 10, AppColors.senColor),
                             const SizedBox(height: 12),
                             if ((stats?['distributable_points'] ?? 0) > 0)
-                              Text(
-                                'Distributable Points: ${stats?['distributable_points']}',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.ariseGold,
-                                  fontWeight: FontWeight.w600,
+                              GestureDetector(
+                                onTap: () => _showStatAllocationDialog(stats?['distributable_points'] ?? 0),
+                                child: Container(
+                                  margin: const EdgeInsets.only(top: 8),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.ariseGold.withAlpha((0.1 * 255).round()),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: AppColors.ariseGold.withAlpha((0.3 * 255).round()),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.add_chart, color: AppColors.ariseGold, size: 14),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        '${stats?['distributable_points']} Points — TAP TO ALLOCATE',
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          color: AppColors.ariseGold,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                           ],

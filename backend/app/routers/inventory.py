@@ -67,6 +67,16 @@ def equip_item(item_id: int, current_user: models.User = Depends(get_current_act
     return {"message": f"{'Equipped' if item.equipped else 'Unequipped'} {item.item_name}"}
 
 
+@router.delete("/{item_id}")
+def delete_item(item_id: int, current_user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    item = crud.get_inventory_item(db, item_id, current_user.id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    db.delete(item)
+    db.commit()
+    return {"message": f"Dropped {item.item_name}"}
+
+
 @router.post("/open-box")
 def open_box(box: schemas.LootBoxOpen, current_user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     try:

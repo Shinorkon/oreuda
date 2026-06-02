@@ -138,6 +138,72 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _showResetStatsDialog(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.slateSurface,
+        title: const Text('Reset All Stats?', style: TextStyle(color: AppColors.hpCrimson, fontSize: 16)),
+        content: const Text(
+          'This will reset all your stats to base values. You will keep your level, rank, and inventory. This action cannot be undone.',
+          style: TextStyle(color: AppColors.mutedAsh, fontSize: 12),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.mutedAsh)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.hpCrimson),
+            child: const Text('Reset'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Stat reset not yet implemented on backend.'),
+          backgroundColor: AppColors.hpCrimson,
+        ),
+      );
+    }
+  }
+
+  Future<void> _showDeleteAccountDialog(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.slateSurface,
+        title: const Text('Delete Account?', style: TextStyle(color: AppColors.hpCrimson, fontSize: 16)),
+        content: const Text(
+          'This will permanently delete your account and all associated data. This action cannot be undone.',
+          style: TextStyle(color: AppColors.mutedAsh, fontSize: 12),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.mutedAsh)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.hpCrimson),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Account deletion not yet implemented on backend.'),
+          backgroundColor: AppColors.hpCrimson,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -237,8 +303,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  _buildDangerButton('Reset All Stats', () {}),
-                  _buildDangerButton('Delete Account', () {}),
+                  _buildDangerButton('Reset All Stats', () => _showResetStatsDialog(context)),
+                  _buildDangerButton('Delete Account', () => _showDeleteAccountDialog(context)),
                   _buildDangerButton('Logout', () => _logout(context)),
                 ],
               ),

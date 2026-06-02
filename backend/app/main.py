@@ -9,7 +9,7 @@ from slowapi.errors import RateLimitExceeded
 
 from app.database import engine, Base
 from app import models, crud
-from app.routers import users, quests, stats, inventory, store, guilds, health, lyfta
+from app.routers import users, quests, stats, inventory, store, guilds, health, lyfta, titles
 
 
 @asynccontextmanager
@@ -56,6 +56,7 @@ app.include_router(store.router, prefix="/api/v1")
 app.include_router(guilds.router, prefix="/api/v1")
 app.include_router(health.router, prefix="/api/v1")
 app.include_router(lyfta.router, prefix="/api/v1")
+app.include_router(titles.router, prefix="/api/v1")
 
 
 @app.get("/")

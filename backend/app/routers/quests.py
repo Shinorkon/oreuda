@@ -75,6 +75,21 @@ def complete_quest(quest_id: int, current_user: models.User = Depends(get_curren
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.put("/{quest_id}", response_model=schemas.QuestOut)
+def update_quest(quest_id: int, updates: schemas.QuestCreate, current_user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    quest = crud.get_quest(db, quest_id)
+    if not quest or quest.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Quest not found")
+    quest.title = updates.title.strip()
+    quest.description = updates.description.strip()
+    quest.difficulty = updates.difficulty
+    quest.xp_reward = updates.xp_reward
+    quest.gold_reward = updates.gold_reward
+    db.commit()
+    db.refresh(quest)
+    return quest
+
+
 @router.post("/{quest_id}/fail")
 def fail_quest(quest_id: int, current_user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     quest = crud.get_quest(db, quest_id)

@@ -44,6 +44,19 @@ def join_guild(guild_id: int, current_user: models.User = Depends(get_current_ac
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.post("/{guild_id}/leave")
+def leave_guild(guild_id: int, current_user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    member = db.query(models.GuildMember).filter(
+        models.GuildMember.guild_id == guild_id,
+        models.GuildMember.user_id == current_user.id,
+    ).first()
+    if not member:
+        raise HTTPException(status_code=404, detail="Not a member of this guild")
+    db.delete(member)
+    db.commit()
+    return {"message": "Left guild", "guild_id": guild_id}
+
+
 @router.get("/{guild_id}/members", response_model=List[schemas.GuildMemberOut])
 def get_members(guild_id: int, db: Session = Depends(get_db)):
     # Eager-load user to avoid N+1

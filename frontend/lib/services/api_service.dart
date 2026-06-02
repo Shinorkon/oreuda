@@ -267,4 +267,27 @@ class ApiService {
       throw Exception('Failed to sync Lyfta: ${res.statusCode} ${res.body}');
     }
   }
+
+  static Future<void> allocateStats({
+    int str = 0,
+    int agi = 0,
+    int vit = 0,
+    int int_ = 0,
+    int sen = 0,
+  }) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/users/me/allocate-stats'),
+      headers: await _headers,
+      body: jsonEncode({
+        'str_points': str,
+        'agi_points': agi,
+        'vit_points': vit,
+        'int_points': int_,
+        'sen_points': sen,
+      }),
+    ).timeout(_defaultTimeout);
+    if (res.statusCode != 200) {
+      throw Exception('Failed to allocate stats: ${res.statusCode} ${res.body}');
+    }
+  }
 }
