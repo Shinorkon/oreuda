@@ -8,7 +8,7 @@ from app.auth import get_current_active_user
 router = APIRouter(prefix="/inventory", tags=["inventory"])
 
 
-@router.get("/", response_model=List[schemas.InventoryItemOut])
+@router.get("", response_model=List[schemas.InventoryItemOut])
 def list_inventory(current_user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     return crud.get_inventory(db, current_user.id)
 

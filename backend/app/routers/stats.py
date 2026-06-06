@@ -9,7 +9,7 @@ from app.auth import get_current_active_user
 router = APIRouter(prefix="/stats", tags=["stats"])
 
 
-@router.get("/", response_model=schemas.PlayerStatsOut)
+@router.get("", response_model=schemas.PlayerStatsOut)
 def get_stats(current_user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     stats = crud.get_player_stats(db, current_user.id)
     if not stats:

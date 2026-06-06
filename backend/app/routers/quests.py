@@ -13,7 +13,7 @@ router = APIRouter(prefix="/quests", tags=["quests"])
 limiter = Limiter(key_func=get_remote_address)
 
 
-@router.get("/", response_model=List[schemas.QuestOut])
+@router.get("", response_model=List[schemas.QuestOut])
 def list_quests(
     quest_type: Optional[str] = None,
     status: Optional[str] = None,
@@ -23,7 +23,7 @@ def list_quests(
     return crud.get_user_quests(db, current_user.id, quest_type, status)
 
 
-@router.post("/", response_model=schemas.QuestOut)
+@router.post("", response_model=schemas.QuestOut)
 def create_quest(quest: schemas.QuestCreate, current_user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     quest.title, quest.description = sanitize_quest_input(quest.title, quest.description)
     return crud.create_quest(db, current_user.id, quest)

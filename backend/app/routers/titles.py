@@ -8,7 +8,7 @@ from app.auth import get_current_active_user
 router = APIRouter(prefix="/titles", tags=["titles"])
 
 
-@router.get("/", response_model=List[schemas.TitleOut])
+@router.get("", response_model=List[schemas.TitleOut])
 def list_titles(current_user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     return crud.get_user_titles(db, current_user.id)
 
