@@ -6,5 +6,5 @@
 class BuildConfig {
   static const String apiHost = '37.60.229.74';
   static const String apiPort = '8004';
-  static const String baseUrl = '';
+  static const String baseUrl = 'http://37.60.229.74:8004/api/v1';
 }

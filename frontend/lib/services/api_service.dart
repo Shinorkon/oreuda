@@ -10,10 +10,12 @@ class ApiService {
   static String get baseUrl {
     if (BuildConfig.baseUrl.isNotEmpty) return BuildConfig.baseUrl;
     if (BuildConfig.apiHost.isNotEmpty && BuildConfig.apiPort.isNotEmpty) {
-      return 'http://${BuildConfig.apiHost}:${BuildConfig.apiPort}';
+      return 'http://${BuildConfig.apiHost}:${BuildConfig.apiPort}/api/v1';
     }
-    return 'http://10.0.2.2:8004';
+    return 'http://10.0.2.2:8004/api/v1';
   }
+
+  static String get _rootUrl => baseUrl.replaceFirst('/api/v1', '');
 
   static const _defaultTimeout = Duration(seconds: 10);
 
@@ -60,7 +62,7 @@ class ApiService {
 
   static Future<bool> ping() async {
     try {
-      final res = await http.get(Uri.parse('$baseUrl/health'))
+      final res = await http.get(Uri.parse('$_rootUrl/health'))
           .timeout(const Duration(seconds: 5));
       return res.statusCode == 200;
     } catch (_) {
