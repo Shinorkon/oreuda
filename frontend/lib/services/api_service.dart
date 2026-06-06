@@ -7,10 +7,13 @@ import '../config.dart';
 import 'health_connect_service.dart';
 
 class ApiService {
-  static String get baseUrl =>
-      BuildConfig.baseUrl.isNotEmpty
-          ? BuildConfig.baseUrl
-          : 'http://10.0.2.2:8004';
+  static String get baseUrl {
+    if (BuildConfig.baseUrl.isNotEmpty) return BuildConfig.baseUrl;
+    if (BuildConfig.apiHost.isNotEmpty && BuildConfig.apiPort.isNotEmpty) {
+      return 'http://${BuildConfig.apiHost}:${BuildConfig.apiPort}';
+    }
+    return 'http://10.0.2.2:8004';
+  }
 
   static const _defaultTimeout = Duration(seconds: 10);
 
