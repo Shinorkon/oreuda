@@ -37,11 +37,14 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# CORS: restrict to actual frontend origins
+# CORS: restrict to actual frontend origins.
+# For personal / single-user builds, any localhost port is allowed so the
+# Linux desktop and mobile debug builds can reach the API out of the box.
 _cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:8004,http://10.0.2.2:8004").split(",")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[o.strip() for o in _cors_origins if o.strip()],
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
     allow_headers=["*"],
