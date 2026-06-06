@@ -15,21 +15,21 @@ class PlayerStats {
 
   factory PlayerStats.fromJson(Map<String, dynamic> json) {
     return PlayerStats(
-      strength: json['strength'] as int? ?? 10,
-      agility: json['agility'] as int? ?? 10,
-      vitality: json['vitality'] as int? ?? 10,
-      intelligence: json['intelligence'] as int? ?? 10,
-      sense: json['sense'] as int? ?? 10,
+      strength: json['str_stat'] as int? ?? 10,
+      agility: json['agi_stat'] as int? ?? 10,
+      vitality: json['vit_stat'] as int? ?? 10,
+      intelligence: json['int_stat'] as int? ?? 10,
+      sense: json['sen_stat'] as int? ?? 10,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'strength': strength,
-      'agility': agility,
-      'vitality': vitality,
-      'intelligence': intelligence,
-      'sense': sense,
+      'str_stat': strength,
+      'agi_stat': agility,
+      'vit_stat': vitality,
+      'int_stat': intelligence,
+      'sen_stat': sense,
     };
   }
 

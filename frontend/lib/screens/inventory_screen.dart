@@ -25,7 +25,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
     try {
       final data = await ApiService.getInventory();
       setState(() {
-        _items = data['items'] ?? [];
+        _items = data;
         _loading = false;
       });
     } catch (e) {

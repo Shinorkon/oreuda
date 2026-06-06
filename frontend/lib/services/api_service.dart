@@ -115,6 +115,18 @@ class ApiService {
     return getQuests(type: 'daily');
   }
 
+  static Future<List<Quest>> generateDailyQuests() async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/quests/generate-daily'),
+      headers: await _headers,
+    ).timeout(_defaultTimeout);
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      return (data as List).map((q) => Quest.fromJson(q)).toList();
+    }
+    throw Exception('Failed to generate daily quests: ${res.statusCode} ${res.body}');
+  }
+
   static Future<List<Quest>> checkQuestCompletion() async {
     final res = await http.post(
       Uri.parse('$baseUrl/quests/check-completion'),
@@ -157,7 +169,7 @@ class ApiService {
     }
   }
 
-  static Future<Map<String, dynamic>> getLeaderboard() async {
+  static Future<List<dynamic>> getLeaderboard() async {
     final res = await http.get(
       Uri.parse('$baseUrl/stats/leaderboard'),
       headers: await _headers,
@@ -168,7 +180,7 @@ class ApiService {
     throw Exception('Failed to get leaderboard: ${res.statusCode}');
   }
 
-  static Future<Map<String, dynamic>> getStoreItems() async {
+  static Future<List<dynamic>> getStoreItems() async {
     final res = await http.get(
       Uri.parse('$baseUrl/store/items'),
       headers: await _headers,
@@ -189,7 +201,7 @@ class ApiService {
     }
   }
 
-  static Future<Map<String, dynamic>> getGuild() async {
+  static Future<List<dynamic>> getGuild() async {
     final res = await http.get(
       Uri.parse('$baseUrl/guilds/'),
       headers: await _headers,
@@ -200,7 +212,7 @@ class ApiService {
     throw Exception('Failed to get guild: ${res.statusCode}');
   }
 
-  static Future<Map<String, dynamic>> getInventory() async {
+  static Future<List<dynamic>> getInventory() async {
     final res = await http.get(
       Uri.parse('$baseUrl/inventory'),
       headers: await _headers,

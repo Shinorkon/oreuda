@@ -43,7 +43,7 @@ class HealthConnectService extends ChangeNotifier {
   HealthConnectService._();
   static final HealthConnectService instance = HealthConnectService._();
 
-  static const _prefKey = 'health_connect_enabled';
+  static const _prefKey = 'setting_health_connect';
   bool? _cachedEnabled;
   bool _configured = false;
   Timer? _pollTimer;

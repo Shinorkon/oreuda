@@ -25,7 +25,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     try {
       final data = await ApiService.getLeaderboard();
       setState(() {
-        _entries = data['leaderboard'] ?? [];
+        _entries = data;
         _loading = false;
       });
     } catch (e) {

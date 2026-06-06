@@ -71,7 +71,7 @@ class _QuestBoardScreenState extends State<QuestBoardScreen> {
   Future<void> _generateDaily() async {
     setState(() => _isLoading = true);
     try {
-      await ApiService.getDailyQuests();
+      await ApiService.generateDailyQuests();
       await _loadQuests();
     } catch (e) {
       setState(() => _isLoading = false);

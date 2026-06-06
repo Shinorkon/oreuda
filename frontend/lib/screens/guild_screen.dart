@@ -39,7 +39,7 @@ class _GuildScreenState extends State<GuildScreen> {
     try {
       final data = await ApiService.getGuild();
       setState(() {
-        _guilds = (data['guilds'] as List<dynamic>?) ?? [];
+        _guilds = data;
         _loading = false;
       });
     } catch (e) {

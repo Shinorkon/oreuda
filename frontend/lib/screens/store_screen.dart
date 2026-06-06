@@ -42,7 +42,7 @@ class _StoreScreenState extends State<StoreScreen> {
       final items = await ApiService.getStoreItems();
       setState(() {
         _gold = user['gold'] ?? 0;
-        _items = items['items'] ?? [];
+        _items = items;
         _loading = false;
       });
     } catch (e) {

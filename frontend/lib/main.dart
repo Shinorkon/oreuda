@@ -7,6 +7,7 @@ import 'screens/main_screen.dart';
 import 'services/auth_service.dart';
 import 'services/settings_service.dart';
 import 'services/notification_service.dart';
+import 'services/health_connect_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +30,7 @@ void main() async {
 
   // Initialize services
   await SettingsService.instance.load();
+  await HealthConnectService.instance.loadEnabled();
   await NotificationService.instance.init();
 
   runApp(const OreudaApp());
